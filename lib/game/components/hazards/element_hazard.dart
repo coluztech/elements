@@ -23,12 +23,13 @@ abstract class ElementHazard extends PositionComponent with CollisionCallbacks {
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-    if (!isLive || other is! PlayerComponent) return;
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (!isLive ||
+        other is! PlayerComponent ||
+        other.lifeState != PlayerLifeState.alive) {
+      return;
+    }
 
     final outcome = HazardResponseResolver.resolve(
       hazardType,

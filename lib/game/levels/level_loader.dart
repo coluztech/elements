@@ -78,6 +78,7 @@ class LevelLoader {
             type: item['type']! as String,
             id: item['id'] as String?,
             durationSeconds: (item['durationSeconds'] as num?)?.toDouble() ?? 6,
+            crateOnly: item['crateOnly'] as bool? ?? false,
           );
         })
         .toList(growable: false);

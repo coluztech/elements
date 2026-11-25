@@ -15,6 +15,17 @@ class LevelSelectScreen extends ConsumerWidget {
     4: Color(0xFF8ED17C),
   };
 
+  static const _worldOneTitles = <int, String>{
+    1: 'Burn the bramble',
+    2: 'Swim the flood',
+    3: 'Bridge & boulder',
+    4: 'Flood · flame · flood',
+    5: 'Timed crossing',
+    6: 'Raise the high path',
+    7: 'Push, burn, ascend',
+    8: 'The rootway trial',
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
@@ -208,7 +219,10 @@ class LevelSelectScreen extends ConsumerWidget {
                                     Text(
                                       isCapstone
                                           ? 'Final ascent'
-                                          : 'Element challenge',
+                                          : worldId == 1
+                                          ? (_worldOneTitles[index] ??
+                                                'Element puzzle')
+                                          : 'Element puzzle',
                                       style: const TextStyle(fontSize: 11),
                                     ),
                                   ],

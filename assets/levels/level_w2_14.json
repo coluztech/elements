@@ -54,8 +54,8 @@
     },
     {
       "x": 380,
-      "y": 640,
-      "height": 96,
+      "y": 688,
+      "height": 48,
       "width": 240
     }
   ],
@@ -63,8 +63,8 @@
     {
       "type": "waterHazard",
       "x": 380,
-      "y": 520,
-      "height": 120,
+      "y": 560,
+      "height": 128,
       "width": 240
     }
   ],
@@ -72,8 +72,8 @@
     {
       "type": "waterVolume",
       "x": 380,
-      "y": 520,
-      "height": 120,
+      "y": 560,
+      "height": 128,
       "width": 240
     }
   ],

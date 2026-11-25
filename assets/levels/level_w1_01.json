@@ -7,9 +7,9 @@
     "cols": 40,
     "tileSize": 32
   },
-  "requiredElements": [],
-  "availableElements": [],
-  "tutorialHint": "Move with the left pad. Tap JUMP to clear the small ledge.",
+  "requiredElements": ["fire"],
+  "availableElements": ["fire"],
+  "tutorialHint": "Fire burns the green bramble. Clear the path, then jump the stone ledge.",
   "parTimeMs": 60000,
   "playerStart": {
     "x": 96,
@@ -49,7 +49,9 @@
     }
   ],
   "hazards": [],
-  "interactables": [],
+  "interactables": [
+    {"type": "burnableVine", "x": 340, "y": 464, "width": 36, "height": 96}
+  ],
   "shards": [
     {
       "x": 300,
@@ -62,8 +64,8 @@
       "x": 250
     },
     {
-      "y": 532,
-      "x": 640
+      "y": 450,
+      "x": 560
     },
     {
       "y": 532,

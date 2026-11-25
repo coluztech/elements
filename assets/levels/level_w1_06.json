@@ -2,87 +2,31 @@
   "levelId": "level_w1_06",
   "world": 1,
   "index": 6,
-  "gridSize": {
-    "rows": 23,
-    "cols": 40,
-    "tileSize": 32
-  },
-  "requiredElements": [
-    "fire",
-    "water"
-  ],
-  "availableElements": [
-    "fire",
-    "water"
-  ],
-  "tutorialHint": "Read the hazard before crossing: Fire passes fire, Water passes water. Swap at the middle.",
-  "parTimeMs": 60000,
-  "playerStart": {
-    "x": 96,
-    "y": 512
-  },
-  "checkpoints": [],
-  "goal": {
-    "x": 1160,
-    "width": 64,
-    "height": 72,
-    "y": 488
-  },
+  "gridSize": {"rows": 23, "cols": 40, "tileSize": 32},
+  "requiredElements": ["earth", "fire", "wood"],
+  "availableElements": ["fire", "water", "earth", "wood"],
+  "tutorialHint": "Raise Earth's stone step to reach the high path. Burn the bramble as Fire, then grow a Wood bridge at the far edge.",
+  "parTimeMs": 125000,
+  "playerStart": {"x": 96, "y": 512},
+  "checkpoints": [{"x": 520, "y": 412}],
+  "goal": {"x": 1160, "y": 488, "height": 72, "width": 64},
   "terrain": [
-    {
-      "x": 0,
-      "width": 1280,
-      "height": 176,
-      "y": 560
-    },
-    {
-      "x": 0,
-      "width": 40,
-      "height": 560,
-      "y": 0
-    },
-    {
-      "x": 1240,
-      "width": 40,
-      "height": 560,
-      "y": 0
-    }
+    {"x": 0, "y": 560, "height": 176, "width": 360},
+    {"x": 500, "y": 460, "height": 100, "width": 260},
+    {"x": 940, "y": 560, "height": 176, "width": 340},
+    {"x": 0, "y": 0, "height": 560, "width": 40},
+    {"x": 1240, "y": 0, "height": 560, "width": 40}
   ],
-  "hazards": [
-    {
-      "type": "fireHazard",
-      "x": 400,
-      "h": 24,
-      "y": 536,
-      "w": 72
-    },
-    {
-      "type": "waterHazard",
-      "x": 800,
-      "h": 24,
-      "y": 536,
-      "w": 72
-    }
+  "hazards": [],
+  "interactables": [
+    {"type": "earthAnchor", "x": 360, "y": 544, "height": 16, "width": 140},
+    {"type": "burnableVine", "x": 640, "y": 364, "height": 96, "width": 36},
+    {"type": "woodAnchor", "x": 760, "y": 480, "height": 16, "width": 180, "durationSeconds": 12}
   ],
-  "interactables": [],
-  "shards": [
-    {
-      "x": 300,
-      "y": 500
-    }
-  ],
+  "shards": [{"x": 260, "y": 532}, {"x": 840, "y": 460}],
   "stars": [
-    {
-      "y": 532,
-      "x": 250
-    },
-    {
-      "y": 532,
-      "x": 640
-    },
-    {
-      "y": 532,
-      "x": 1000
-    }
+    {"x": 260, "y": 532},
+    {"x": 700, "y": 420},
+    {"x": 1010, "y": 532}
   ]
 }

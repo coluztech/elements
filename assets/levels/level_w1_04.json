@@ -8,19 +8,31 @@
     "tileSize": 32
   },
   "requiredElements": [
-    "water"
+    "water",
+    "fire"
   ],
   "availableElements": [
     "fire",
-    "water"
+    "water",
+    "earth",
+    "wood"
   ],
-  "tutorialHint": "Water can move through flooded passages. Hold MOVE to swim across; tap JUMP to swim upward.",
-  "parTimeMs": 75000,
+  "tutorialHint": "Cross the first flood as Water, change to Fire for the heated stone, then return to Water for the last basin.",
+  "parTimeMs": 100000,
   "playerStart": {
     "x": 96,
     "y": 512
   },
-  "checkpoints": [],
+  "checkpoints": [
+    {
+      "x": 460,
+      "y": 512
+    },
+    {
+      "x": 700,
+      "y": 512
+    }
+  ],
   "goal": {
     "x": 1160,
     "width": 64,
@@ -30,71 +42,108 @@
   "terrain": [
     {
       "x": 0,
-      "width": 360,
+      "y": 560,
       "height": 176,
-      "y": 560
+      "width": 300
     },
     {
-      "x": 640,
-      "width": 640,
+      "x": 460,
+      "y": 560,
       "height": 176,
-      "y": 560
+      "width": 240
+    },
+    {
+      "x": 860,
+      "y": 560,
+      "height": 176,
+      "width": 420
     },
     {
       "x": 0,
-      "width": 40,
+      "y": 0,
       "height": 560,
-      "y": 0
+      "width": 40
     },
     {
       "x": 1240,
-      "width": 40,
+      "y": 0,
       "height": 560,
-      "y": 0
+      "width": 40
     },
     {
-      "x": 360,
-      "width": 280,
-      "height": 96,
-      "y": 640
+      "x": 300.0,
+      "y": 688,
+      "height": 48,
+      "width": 160.0
+    },
+    {
+      "x": 700.0,
+      "y": 688,
+      "height": 48,
+      "width": 160.0
     }
   ],
   "hazards": [
     {
       "type": "waterHazard",
-      "x": 360,
-      "h": 120,
-      "y": 520,
-      "w": 280
+      "x": 300,
+      "y": 560,
+      "width": 160,
+      "height": 128
+    },
+    {
+      "type": "fireHazard",
+      "x": 540,
+      "y": 536,
+      "width": 80,
+      "height": 24
+    },
+    {
+      "type": "waterHazard",
+      "x": 700,
+      "y": 560,
+      "width": 160,
+      "height": 128
     }
   ],
   "interactables": [
     {
       "type": "waterVolume",
-      "width": 280,
-      "x": 360,
-      "height": 120,
-      "y": 520
+      "x": 300,
+      "y": 560,
+      "width": 160,
+      "height": 128
+    },
+    {
+      "type": "waterVolume",
+      "x": 700,
+      "y": 560,
+      "width": 160,
+      "height": 128
     }
   ],
   "shards": [
     {
-      "x": 300,
-      "y": 500
+      "x": 240,
+      "y": 510
+    },
+    {
+      "x": 780,
+      "y": 590
     }
   ],
   "stars": [
     {
-      "y": 532,
-      "x": 250
+      "x": 220,
+      "y": 532
     },
     {
-      "y": 590,
-      "x": 500
+      "x": 580,
+      "y": 500
     },
     {
-      "y": 532,
-      "x": 1000
+      "x": 780,
+      "y": 590
     }
   ]
 }

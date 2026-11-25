@@ -115,6 +115,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 ),
                 GameSceneState.levelComplete => _LevelCompleteOverlay(
                   result: _game.levelResult.value,
+                  title: _levelCompletionTitle,
                   continueLabel: _hasNextLevel ? 'Next Level' : 'Root Map',
                   onRetry: () {
                     _saveStarted = false;
@@ -181,6 +182,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       (world) => world.id == level.world && level.index < world.levelCount,
     );
   }
+
+  String get _levelCompletionTitle {
+    final level = _game.loadedLevel;
+    if (level == null) return 'Level completed';
+    return 'World ${level.world} · Level ${level.index} completed';
+  }
 }
 
 class _LoadingOverlay extends StatelessWidget {
@@ -238,12 +245,14 @@ class _LevelLoadError extends StatelessWidget {
 class _LevelCompleteOverlay extends StatelessWidget {
   const _LevelCompleteOverlay({
     required this.result,
+    required this.title,
     required this.continueLabel,
     required this.onRetry,
     required this.onNext,
   });
 
   final LevelResult? result;
+  final String title;
   final String continueLabel;
   final VoidCallback onRetry;
   final VoidCallback onNext;
@@ -255,10 +264,7 @@ class _LevelCompleteOverlay extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Level complete',
-            style: TextStyle(color: Colors.white, fontSize: 28),
-          ),
+          Text(title, style: TextStyle(color: Colors.white, fontSize: 28)),
           const SizedBox(height: 12),
           Text(
             '★' * (result?.stars ?? 1) + '☆' * (3 - (result?.stars ?? 1)),

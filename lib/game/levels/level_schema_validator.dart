@@ -140,6 +140,9 @@ class LevelSchemaValidator {
       if (item['id'] != null && item['id'] is! String) {
         _fail('interactables[$i].id', 'must be a string.');
       }
+      if (item['crateOnly'] != null && item['crateOnly'] is! bool) {
+        _fail('interactables[$i].crateOnly', 'must be a boolean.');
+      }
     }
     final shards = _list(json['shards'] ?? const [], 'shards');
     for (var i = 0; i < shards.length; i++) {
@@ -352,6 +355,8 @@ class TiledLevelAdapter {
                 if (object['id'] != null) 'id': object['id'].toString(),
                 if (objectProperties['durationSeconds'] != null)
                   'durationSeconds': objectProperties['durationSeconds'],
+                if (objectProperties['crateOnly'] is bool)
+                  'crateOnly': objectProperties['crateOnly'],
               });
               break;
           }

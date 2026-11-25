@@ -56,11 +56,13 @@ class LevelInteractableData extends LevelRect {
     required this.type,
     this.id,
     this.durationSeconds = 6,
+    this.crateOnly = false,
   });
 
   final String type;
   final String? id;
   final double durationSeconds;
+  final bool crateOnly;
 }
 
 class LevelShard {

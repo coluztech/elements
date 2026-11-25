@@ -146,6 +146,7 @@ class LevelWorld extends PositionComponent {
               size: itemSize,
               player: player,
               crates: _crates,
+              crateOnly: item.crateOnly,
             ),
           );
           break;

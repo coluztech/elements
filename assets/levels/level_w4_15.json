@@ -7,8 +7,18 @@
     "cols": 40,
     "tileSize": 32
   },
-  "requiredElements": ["fire", "water", "earth", "wood"],
-  "availableElements": ["fire", "water", "earth", "wood"],
+  "requiredElements": [
+    "fire",
+    "water",
+    "earth",
+    "wood"
+  ],
+  "availableElements": [
+    "fire",
+    "water",
+    "earth",
+    "wood"
+  ],
   "tutorialHint": "The Heartwood tests every form: burn the bramble, grow and climb the roots, cross the flood as Water, then raise Earth's bridge.",
   "parTimeMs": 150000,
   "playerStart": {
@@ -16,8 +26,14 @@
     "y": 512
   },
   "checkpoints": [
-    {"x": 510, "y": 512},
-    {"x": 780, "y": 512}
+    {
+      "x": 510,
+      "y": 512
+    },
+    {
+      "x": 780,
+      "y": 512
+    }
   ],
   "goal": {
     "x": 1160,
@@ -26,30 +42,115 @@
     "width": 64
   },
   "terrain": [
-    {"x": 0, "y": 560, "height": 176, "width": 320},
-    {"x": 500, "y": 560, "height": 176, "width": 300},
-    {"x": 1020, "y": 560, "height": 176, "width": 260},
-    {"x": 0, "y": 0, "height": 560, "width": 40},
-    {"x": 1240, "y": 0, "height": 560, "width": 40},
-    {"x": 320, "y": 704, "height": 32, "width": 700}
+    {
+      "x": 0,
+      "y": 560,
+      "height": 176,
+      "width": 320
+    },
+    {
+      "x": 500,
+      "y": 560,
+      "height": 176,
+      "width": 60
+    },
+    {
+      "x": 780,
+      "y": 560,
+      "height": 176,
+      "width": 20
+    },
+    {
+      "x": 1020,
+      "y": 560,
+      "height": 176,
+      "width": 260
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 1240,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 560,
+      "y": 688,
+      "height": 48,
+      "width": 220
+    }
   ],
   "hazards": [
-    {"type": "waterHazard", "x": 560, "y": 520, "height": 40, "width": 220}
+    {
+      "type": "waterHazard",
+      "x": 560,
+      "y": 560,
+      "height": 128,
+      "width": 220
+    }
   ],
   "interactables": [
-    {"type": "burnableVine", "x": 220, "y": 500, "height": 60, "width": 28},
-    {"type": "woodAnchor", "x": 320, "y": 544, "height": 16, "width": 180, "durationSeconds": 14},
-    {"type": "waterVolume", "x": 560, "y": 500, "height": 60, "width": 220},
-    {"type": "earthAnchor", "x": 800, "y": 544, "height": 16, "width": 220}
+    {
+      "type": "burnableVine",
+      "x": 220,
+      "y": 500,
+      "height": 60,
+      "width": 28
+    },
+    {
+      "type": "woodAnchor",
+      "x": 320,
+      "y": 544,
+      "height": 16,
+      "width": 180,
+      "durationSeconds": 14
+    },
+    {
+      "type": "waterVolume",
+      "x": 560,
+      "y": 560,
+      "height": 128,
+      "width": 220
+    },
+    {
+      "type": "earthAnchor",
+      "x": 800,
+      "y": 544,
+      "height": 16,
+      "width": 220
+    }
   ],
   "shards": [
-    {"x": 160, "y": 500},
-    {"x": 640, "y": 530},
-    {"x": 900, "y": 510}
+    {
+      "x": 160,
+      "y": 500
+    },
+    {
+      "x": 640,
+      "y": 610
+    },
+    {
+      "x": 900,
+      "y": 510
+    }
   ],
   "stars": [
-    {"x": 150, "y": 532},
-    {"x": 650, "y": 530},
-    {"x": 1090, "y": 532}
+    {
+      "x": 150,
+      "y": 532
+    },
+    {
+      "x": 650,
+      "y": 610
+    },
+    {
+      "x": 1090,
+      "y": 532
+    }
   ]
 }

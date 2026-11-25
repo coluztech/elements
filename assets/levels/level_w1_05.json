@@ -8,81 +8,127 @@
     "tileSize": 32
   },
   "requiredElements": [
-    "water"
+    "water",
+    "fire",
+    "wood"
   ],
   "availableElements": [
     "fire",
-    "water"
+    "water",
+    "earth",
+    "wood"
   ],
-  "tutorialHint": "Stay in Water through the pool, then use the Water switch on the far bank.",
-  "parTimeMs": 60000,
+  "tutorialHint": "Swim through the first basin, cross the hot ledge as Fire, then grow a timed Wood bridge to the goal.",
+  "parTimeMs": 115000,
   "playerStart": {
     "x": 96,
     "y": 512
   },
-  "checkpoints": [],
+  "checkpoints": [
+    {
+      "x": 480,
+      "y": 512
+    }
+  ],
   "goal": {
     "x": 1160,
-    "width": 64,
+    "y": 488,
     "height": 72,
-    "y": 488
+    "width": 64
   },
   "terrain": [
     {
       "x": 0,
-      "width": 1280,
+      "y": 560,
       "height": 176,
-      "y": 560
+      "width": 320
+    },
+    {
+      "x": 480,
+      "y": 560,
+      "height": 176,
+      "width": 280
+    },
+    {
+      "x": 960,
+      "y": 560,
+      "height": 176,
+      "width": 320
     },
     {
       "x": 0,
-      "width": 40,
+      "y": 0,
       "height": 560,
-      "y": 0
+      "width": 40
     },
     {
       "x": 1240,
-      "width": 40,
+      "y": 0,
       "height": 560,
-      "y": 0
+      "width": 40
+    },
+    {
+      "x": 320.0,
+      "y": 688,
+      "height": 48,
+      "width": 160.0
     }
   ],
   "hazards": [
     {
       "type": "waterHazard",
-      "x": 480,
-      "h": 24,
+      "x": 320,
+      "y": 560,
+      "width": 160,
+      "height": 128
+    },
+    {
+      "type": "fireHazard",
+      "x": 600,
       "y": 536,
-      "w": 112
+      "width": 80,
+      "height": 24
     }
   ],
   "interactables": [
     {
-      "type": "waterSwitch",
-      "width": 40,
+      "type": "waterVolume",
+      "x": 320,
+      "y": 560,
+      "width": 160,
+      "height": 128
+    },
+    {
+      "type": "woodAnchor",
       "x": 760,
+      "y": 544,
+      "width": 200,
       "height": 16,
-      "y": 544
+      "durationSeconds": 12
     }
   ],
   "shards": [
     {
-      "x": 300,
-      "y": 500
+      "x": 260,
+      "y": 532
+    },
+    {
+      "x": 820,
+      "y": 510
     }
   ],
   "stars": [
     {
-      "y": 532,
-      "x": 250
+      "x": 240,
+      "y": 532
     },
     {
-      "y": 532,
-      "x": 640
+      "x": 640,
+      "y": 532
     },
     {
-      "y": 532,
-      "x": 1000
+      "x": 850,
+      "y": 510
     }
   ]
 }

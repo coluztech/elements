@@ -12,11 +12,13 @@ class ElementSwitchComponent extends PositionComponent {
     required Vector2 size,
     required this.player,
     required this.crates,
+    this.crateOnly = false,
   }) : super(position: position, size: size, anchor: Anchor.topLeft);
 
   final String type;
   final PlayerComponent player;
   final List<PushableCrate> crates;
+  final bool crateOnly;
   bool isActive = false;
 
   @override
@@ -38,6 +40,7 @@ class ElementSwitchComponent extends PositionComponent {
               crate.isSolid && switchRect.overlaps(crate.toAbsoluteRect()),
         );
     final playerActivates =
+        !crateOnly &&
         player.lifeState == PlayerLifeState.alive &&
         switchRect.overlaps(player.body.aabb) &&
         SwitchActivationResolver.isActivatedByPlayer(

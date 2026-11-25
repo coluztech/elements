@@ -68,6 +68,7 @@ class PlayerKinematics {
     required List<Rect> solids,
     ElementType element = ElementType.fire,
     bool inWater = false,
+    double? waterSurfaceY,
     bool climbing = false,
     bool applyElementStats = true,
   }) {
@@ -80,7 +81,7 @@ class PlayerKinematics {
 
     var consumedJump = false;
     if (climbing && jumpRequested) {
-      body.vy = -config.jumpSpeed * 0.72;
+      body.vy = -config.jumpSpeed * 0.82;
       body.grounded = false;
       body.coyote = 0;
       consumedJump = true;
@@ -111,19 +112,31 @@ class PlayerKinematics {
       consumedJump = true;
     }
 
+    final isSwimming = inWater && element == ElementType.water;
     body.vx =
         axis *
         config.moveSpeed *
-        (applyElementStats ? element.speedMultiplier : 1);
-    final gravity = inWater && element == ElementType.water
+        (applyElementStats ? element.speedMultiplier : 1) *
+        (isSwimming ? 0.82 : 1);
+    final gravity = isSwimming
         ? config.gravity * 0.3
         : config.gravity * (applyElementStats ? element.gravityMultiplier : 1);
-    body.vy += gravity * clampedDt;
-    final maxFallSpeed = inWater && element == ElementType.water
-        ? 180.0
-        : config.maxFallSpeed;
+    if (isSwimming && waterSurfaceY != null) {
+      final submerged = ((body.y + body.height - waterSurfaceY) / body.height)
+          .clamp(0.0, 1.0)
+          .toDouble();
+      final buoyancy = config.gravity * (0.20 + submerged * 0.20);
+      body.vy += (gravity - buoyancy) * clampedDt;
+      body.vy *= math.pow(0.16, clampedDt).toDouble();
+    } else {
+      body.vy += gravity * clampedDt;
+    }
+    final maxFallSpeed = isSwimming ? 110.0 : config.maxFallSpeed;
     if (body.vy > maxFallSpeed) {
       body.vy = maxFallSpeed;
+    }
+    if (isSwimming && body.vy < -config.jumpSpeed * 0.45) {
+      body.vy = -config.jumpSpeed * 0.45;
     }
 
     body.x += body.vx * clampedDt;

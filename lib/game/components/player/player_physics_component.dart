@@ -17,9 +17,16 @@ class PlayerPhysicsComponent extends Component {
     player.stateMachine.update(dt);
     player.isPushing = false;
     _pushCrates(player, dt);
-    final inWater =
-        player.element == ElementType.water &&
-        player.waterVolumes.any((volume) => volume.overlaps(player.body.aabb));
+    Rect? swimmingVolume;
+    if (player.element == ElementType.water) {
+      for (final volume in player.waterVolumes) {
+        if (volume.overlaps(player.body.aabb)) {
+          swimmingVolume = volume;
+          break;
+        }
+      }
+    }
+    final inWater = swimmingVolume != null;
     player.isSwimming = inWater;
     player.isClimbing =
         player.element == ElementType.wood &&
@@ -38,6 +45,7 @@ class PlayerPhysicsComponent extends Component {
       solids: player.solidAabbs,
       element: player.element,
       inWater: inWater,
+      waterSurfaceY: swimmingVolume?.top,
       climbing: player.isClimbing,
       applyElementStats: player.availableElements?.isNotEmpty ?? true,
     );
@@ -45,6 +53,10 @@ class PlayerPhysicsComponent extends Component {
       player.intents.consumeJump();
     }
     player.position.setValues(player.body.x, player.body.y);
+    final world = player.parent;
+    if (world is PositionComponent && player.body.y > world.size.y) {
+      player.beginRespawn();
+    }
   }
 
   void _pushCrates(PlayerComponent player, double dt) {

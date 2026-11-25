@@ -8,12 +8,13 @@
     "tileSize": 32
   },
   "requiredElements": [
-    "fire"
+    "water"
   ],
   "availableElements": [
-    "fire"
+    "fire",
+    "water"
   ],
-  "tutorialHint": "You are Fire. Walk into the green vine to burn it and clear the path.",
+  "tutorialHint": "Only Water can cross the flooded gap. Enter the pool and tap JUMP to swim upward.",
   "parTimeMs": 60000,
   "playerStart": {
     "x": 96,
@@ -29,7 +30,13 @@
   "terrain": [
     {
       "x": 0,
-      "width": 1280,
+      "width": 420,
+      "height": 176,
+      "y": 560
+    },
+    {
+      "x": 720,
+      "width": 560,
       "height": 176,
       "y": 560
     },
@@ -44,22 +51,36 @@
       "width": 40,
       "height": 560,
       "y": 0
+    },
+    {
+      "x": 420.0,
+      "y": 688,
+      "height": 48,
+      "width": 300.0
     }
   ],
-  "hazards": [],
+  "hazards": [
+    {
+      "type": "waterHazard",
+      "x": 420,
+      "y": 560,
+      "width": 300,
+      "height": 128
+    }
+  ],
   "interactables": [
     {
-      "type": "burnableVine",
-      "width": 36,
-      "x": 400,
-      "height": 96,
-      "y": 464
+      "type": "waterVolume",
+      "x": 420,
+      "y": 560,
+      "width": 300,
+      "height": 128
     }
   ],
   "shards": [
     {
-      "x": 300,
-      "y": 500
+      "x": 560,
+      "y": 610
     }
   ],
   "stars": [
@@ -68,7 +89,7 @@
       "x": 250
     },
     {
-      "y": 532,
+      "y": 610,
       "x": 640
     },
     {

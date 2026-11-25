@@ -48,13 +48,30 @@ class PlayerHud extends StatelessWidget {
                         horizontal: 10,
                         vertical: 6,
                       ),
-                      child: Text(
-                        '${activeElement.displayName} · Speed '
-                        '${(220 * activeElement.speedMultiplier).round()}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'WORLD ${game.loadedLevel?.world ?? 1}  ·  '
+                            'LEVEL ${game.loadedLevel?.index ?? 1}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '${activeElement.displayName} · Speed '
+                            '${(220 * activeElement.speedMultiplier).round()}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
