@@ -1,0 +1,87 @@
+{
+  "levelId": "level_w4_10",
+  "world": 4,
+  "index": 10,
+  "gridSize": {
+    "rows": 23,
+    "tileSize": 32,
+    "cols": 40
+  },
+  "requiredElements": [
+    "wood"
+  ],
+  "availableElements": [
+    "fire",
+    "wood"
+  ],
+  "tutorialHint": "Stand near the seed anchor as Wood and tap ABILITY to grow a bridge.",
+  "parTimeMs": 90000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "y": 488,
+    "height": 72,
+    "width": 64
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "y": 560,
+      "height": 176,
+      "width": 420
+    },
+    {
+      "x": 780,
+      "y": 560,
+      "height": 176,
+      "width": 500
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 1240,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    }
+  ],
+  "hazards": [],
+  "interactables": [
+    {
+      "width": 360,
+      "x": 420,
+      "type": "woodAnchor",
+      "y": 520,
+      "height": 24,
+      "durationSeconds": 10
+    }
+  ],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 490,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

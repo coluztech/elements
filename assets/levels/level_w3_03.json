@@ -1,0 +1,100 @@
+{
+  "levelId": "level_w3_03",
+  "world": 3,
+  "index": 3,
+  "gridSize": {
+    "rows": 23,
+    "tileSize": 32,
+    "cols": 40
+  },
+  "requiredElements": [
+    "water"
+  ],
+  "availableElements": [
+    "fire",
+    "water"
+  ],
+  "tutorialHint": "Switch to Water before entering the flooded gap. Jump to swim upward.",
+  "parTimeMs": 78000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "y": 488,
+    "height": 72,
+    "width": 64
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "y": 560,
+      "height": 176,
+      "width": 380
+    },
+    {
+      "x": 620,
+      "y": 560,
+      "height": 176,
+      "width": 660
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 1240,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 380,
+      "y": 640,
+      "height": 96,
+      "width": 240
+    }
+  ],
+  "hazards": [
+    {
+      "type": "waterHazard",
+      "x": 380,
+      "y": 520,
+      "height": 120,
+      "width": 240
+    }
+  ],
+  "interactables": [
+    {
+      "type": "waterVolume",
+      "x": 380,
+      "y": 520,
+      "height": 120,
+      "width": 240
+    }
+  ],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 590,
+      "x": 500
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

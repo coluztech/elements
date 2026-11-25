@@ -1,0 +1,81 @@
+{
+  "levelId": "level_w1_07",
+  "world": 1,
+  "index": 7,
+  "gridSize": {
+    "rows": 23,
+    "cols": 40,
+    "tileSize": 32
+  },
+  "requiredElements": [
+    "earth"
+  ],
+  "availableElements": [
+    "fire",
+    "water",
+    "earth"
+  ],
+  "tutorialHint": "Only Earth has enough weight to depress the stone switch.",
+  "parTimeMs": 60000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "width": 64,
+    "height": 72,
+    "y": 488
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "width": 1280,
+      "height": 176,
+      "y": 560
+    },
+    {
+      "x": 0,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    },
+    {
+      "x": 1240,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    }
+  ],
+  "hazards": [],
+  "interactables": [
+    {
+      "type": "earthSwitch",
+      "width": 48,
+      "x": 700,
+      "height": 16,
+      "y": 544
+    }
+  ],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 532,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

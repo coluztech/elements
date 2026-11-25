@@ -1,0 +1,87 @@
+{
+  "levelId": "level_w2_01",
+  "world": 2,
+  "index": 1,
+  "gridSize": {
+    "rows": 23,
+    "tileSize": 32,
+    "cols": 40
+  },
+  "requiredElements": [
+    "earth"
+  ],
+  "availableElements": [
+    "fire",
+    "earth"
+  ],
+  "tutorialHint": "Use Earth to push the stone crate onto the pressure switch.",
+  "parTimeMs": 71000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "y": 488,
+    "height": 72,
+    "width": 64
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "y": 560,
+      "height": 176,
+      "width": 1280
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 1240,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    }
+  ],
+  "hazards": [],
+  "interactables": [
+    {
+      "type": "crate",
+      "x": 420,
+      "y": 524,
+      "height": 36,
+      "width": 40
+    },
+    {
+      "type": "earthSwitch",
+      "x": 760,
+      "y": 544,
+      "height": 16,
+      "width": 48
+    }
+  ],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 532,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

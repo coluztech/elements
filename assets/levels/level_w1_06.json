@@ -1,0 +1,88 @@
+{
+  "levelId": "level_w1_06",
+  "world": 1,
+  "index": 6,
+  "gridSize": {
+    "rows": 23,
+    "cols": 40,
+    "tileSize": 32
+  },
+  "requiredElements": [
+    "fire",
+    "water"
+  ],
+  "availableElements": [
+    "fire",
+    "water"
+  ],
+  "tutorialHint": "Read the hazard before crossing: Fire passes fire, Water passes water. Swap at the middle.",
+  "parTimeMs": 60000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "width": 64,
+    "height": 72,
+    "y": 488
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "width": 1280,
+      "height": 176,
+      "y": 560
+    },
+    {
+      "x": 0,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    },
+    {
+      "x": 1240,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    }
+  ],
+  "hazards": [
+    {
+      "type": "fireHazard",
+      "x": 400,
+      "h": 24,
+      "y": 536,
+      "w": 72
+    },
+    {
+      "type": "waterHazard",
+      "x": 800,
+      "h": 24,
+      "y": 536,
+      "w": 72
+    }
+  ],
+  "interactables": [],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 532,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

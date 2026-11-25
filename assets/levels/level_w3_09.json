@@ -1,0 +1,83 @@
+{
+  "levelId": "level_w3_09",
+  "world": 3,
+  "index": 9,
+  "gridSize": {
+    "rows": 23,
+    "tileSize": 32,
+    "cols": 40
+  },
+  "requiredElements": [
+    "fire",
+    "water"
+  ],
+  "availableElements": [
+    "fire",
+    "water",
+    "earth",
+    "wood"
+  ],
+  "tutorialHint": "Fire can cross the flame. Water is the safe choice for water hazards.",
+  "parTimeMs": 84000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "y": 488,
+    "height": 72,
+    "width": 64
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "y": 560,
+      "height": 176,
+      "width": 1280
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    },
+    {
+      "x": 1240,
+      "y": 0,
+      "height": 560,
+      "width": 40
+    }
+  ],
+  "hazards": [
+    {
+      "type": "fireHazard",
+      "x": 500,
+      "y": 536,
+      "height": 24,
+      "width": 120
+    }
+  ],
+  "interactables": [],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 532,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

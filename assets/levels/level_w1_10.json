@@ -1,0 +1,95 @@
+{
+  "levelId": "level_w1_10",
+  "world": 1,
+  "index": 10,
+  "gridSize": {
+    "rows": 23,
+    "cols": 40,
+    "tileSize": 32
+  },
+  "requiredElements": [
+    "wood"
+  ],
+  "availableElements": [
+    "fire",
+    "water",
+    "earth",
+    "wood"
+  ],
+  "tutorialHint": "Grow the bridge, cross before it fades. Fire can burn Wood structures away.",
+  "parTimeMs": 90000,
+  "playerStart": {
+    "x": 96,
+    "y": 512
+  },
+  "checkpoints": [],
+  "goal": {
+    "x": 1160,
+    "width": 64,
+    "height": 72,
+    "y": 488
+  },
+  "terrain": [
+    {
+      "x": 0,
+      "width": 420,
+      "height": 176,
+      "y": 560
+    },
+    {
+      "x": 840,
+      "width": 440,
+      "height": 176,
+      "y": 560
+    },
+    {
+      "x": 0,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    },
+    {
+      "x": 1240,
+      "width": 40,
+      "height": 560,
+      "y": 0
+    },
+    {
+      "x": 420,
+      "width": 420,
+      "height": 32,
+      "y": 704
+    }
+  ],
+  "hazards": [],
+  "interactables": [
+    {
+      "y": 520,
+      "type": "woodAnchor",
+      "durationSeconds": 8,
+      "height": 16,
+      "width": 440,
+      "x": 400
+    }
+  ],
+  "shards": [
+    {
+      "x": 300,
+      "y": 500
+    }
+  ],
+  "stars": [
+    {
+      "y": 532,
+      "x": 250
+    },
+    {
+      "y": 490,
+      "x": 640
+    },
+    {
+      "y": 532,
+      "x": 1000
+    }
+  ]
+}

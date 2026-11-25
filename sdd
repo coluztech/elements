@@ -1,0 +1,1643 @@
+==============================================================================
+                              ELEMENT SHIFT
+        Game Design Document & Software Design Document
+           A 2D Elemental Puzzle-Platformer for Mobile
+==============================================================================
+
+Engine: Flutter + Flame
+Platforms: Android (launch) -> iOS -> Web (stretch)
+Document Version: 1.0
+Status: Pre-Production / Design Freeze Candidate
+Prepared for: AI-Assisted Development (Cursor / Copilot / Gemini / Claude)
+
+
+
+==============================================================================
+TABLE OF CONTENTS
+==============================================================================
+
+This document is organized into seven parts, structured so that each part can be used independently by a designer, engineer, or an AI coding agent working sprint by sprint.
+
+| Part | Title | Purpose |
+| --- | --- | --- |
+| 0 | Executive Summary | One-page pitch, scope, and success criteria |
+| I | Game Design Document (GDD) | Vision, mechanics, elements, level design, monetization |
+| II | Technical Software Design Document (SDD) | Architecture, Flutter/Flame structure, systems |
+| III | UML & Diagrams | Class diagrams, state diagrams, flows, folder structure |
+| IV | Level Design Framework | World breakdown, level templates, difficulty curve |
+| V | Development Roadmap | Milestones from prototype to release |
+| VI | AI Development Specifications | Modular tasks and acceptance criteria, sprint by sprint |
+| VII | Future Expansion Ideas | Post-launch content and systems |
+
+
+==============================================================================
+PART 0 - EXECUTIVE SUMMARY
+==============================================================================
+
+
+## 0.1 Concept in One Sentence
+
+Element Shift is a 2D puzzle-platformer in which the player controls a single character who instantly transforms between four elemental forms - Fire, Water, Earth, and Wood - each with unique traversal and interaction abilities, to solve environmental puzzles across four progressively harder worlds.
+
+
+## 0.2 Elevator Pitch
+
+Fireboy & Watergirl proved that elemental abilities create satisfying physical puzzles. Element Shift takes that DNA and compresses it into a single character with an Omnitrix-style instant-swap mechanic, turning every level into a rapid-fire decision tree: "which element, right now?" Short, bite-sized levels (60-180 seconds each) make it an ideal mobile casual title, while optional stars, hidden collectibles, and combo puzzles give it depth for players who want to master it.
+
+
+## 0.3 Why This Game, Why Now
+
+  - Puzzle-platformers with clear, teachable rules perform consistently well in casual mobile (see Fireboy & Watergirl mobile ports, Two Dots, Heads Up puzzle-platform hybrids).
+  - The single-character transformation hook is a differentiator versus the original two-character co-op formula, and removes the friction of needing a second player or AI partner.
+  - Flutter + Flame allows a single codebase to ship Android first and iOS/Web later with minimal rework, which matters for a small or solo team.
+  - Short session length (2-4 minutes per level) fits mobile play patterns and supports a fair ad-based monetization model without punishing players.
+
+
+## 0.4 Target Audience
+
+| Segment | Description | Why They Play |
+| --- | --- | --- |
+| Primary | Casual puzzle players, ages 10-35, mobile-first | Bite-sized brain teasers, satisfying "aha" moments |
+| Secondary | Platformer fans nostalgic for Fireboy & Watergirl-style games | Familiar mechanics, new single-character twist |
+| Tertiary | Completionists / speedrunners | Star ratings, hidden collectibles, time trials |
+
+
+## 0.5 Scope Summary
+
+| Dimension | Target |
+| --- | --- |
+| Worlds | 4 at launch (Fire, Dual-Element, Timing, Advanced Combination themes) |
+| Levels | 60 at launch (15 per world), expandable via updates |
+| Playable elements | 4 (Fire, Water, Earth, Wood) - all unlocked progressively across World 1 |
+| Session length | 60-180 seconds per level; 20-40 minutes per play session |
+| Monetization | Free-to-play, rewarded video ads, optional interstitials, one-time "Remove Ads + Bonus Skins" IAP |
+| Engine | Flutter + Flame Engine (Dart) |
+| Target build size | < 150 MB initial download (Android App Bundle) |
+
+
+## 0.6 Success Criteria
+
+  1. Prototype proves the transformation feel (< 0.3s swap, readable silhouette change) is fun in under 10 test levels.
+  2. Vertical slice (World 1, 15 levels) achieves an average external playtester completion rate above 80% without hints.
+  3. Beta build maintains 55+ FPS on a mid-tier Android device (e.g., 3-year-old mid-range phone) across all worlds.
+  4. Day-1 to Day-7 retention benchmarks are met or exceeded relative to genre comparables before wide marketing spend.
+  5. Monetization does not require an interstitial or rewarded ad to complete any level - ads are always optional value-adds.
+
+
+
+==============================================================================
+PART I — GAME DESIGN DOCUMENT
+==============================================================================
+
+This part defines the game from the player's perspective: what it is, how it feels, and why each design decision serves the core fantasy of instant elemental mastery.
+
+
+## 1. Project Overview
+
+| Field | Value |
+| --- | --- |
+| Working Title | Element Shift |
+| Genre | 2D Puzzle Platformer, Casual, Single Player, Level-Based |
+| Perspective | Side-view (2D), fixed camera per screen or smooth-follow per level (see 1.1) |
+| Primary Platform | Android (Google Play) |
+| Secondary Platforms | iOS (App Store), Web (stretch goal / promo build) |
+| Engine | Flutter (UI/app shell) + Flame Engine (game loop, rendering, ECS-lite components) |
+| Art Style | Clean, colorful, minimalist fantasy with soft lighting; each element has a distinct silhouette and palette |
+| Session Length | 60–180 seconds per level |
+| Business Model | Free-to-play with rewarded ads, optional interstitials, one premium unlock |
+
+
+### 1.1 Camera & Presentation
+
+Each level is presented as a single contained playfield sized to fit the device's viewport at a fixed world-to-screen scale, in the tradition of Fireboy & Watergirl. Larger levels (introduced from World 2 onward) use a smooth-follow camera with soft bounds, easing over 0.15s, to avoid disorienting the player during rapid element swaps. The camera never cuts or hard-snaps during a transformation — the swap is a character-local event, not a camera event, which keeps the player spatially oriented.
+
+
+## 2. Core Game Concept
+
+Element Shift reimagines the Fireboy & Watergirl puzzle-platformer format around a single protagonist instead of a co-op pair. Instead of switching control between two characters, the player instantly reshapes one character's elemental nature. This preserves the genre's signature "right tool, right moment" puzzle logic while removing split-attention control and making the game natively single-player and mobile-friendly.
+
+
+### 2.1 The Transformation Fantasy
+
+The transformation is the game's central verb and its marketing hook. It is designed to feel like two established touchstones:
+
+| Reference | What We Borrow |
+| --- | --- |
+| Ben 10 (Omnitrix) | The idea of a compact selector (wheel/dial) that instantly commits to a new form, with a signature flash/silhouette-change animation and a short recognizable transformation stinger sound |
+| GTA V (character switch) | The responsiveness and lack of input lag — the player never feels like they are waiting on the game; the switch reads as an interrupt, not a queued animation |
+
+
+### 2.2 Transformation Specification
+
+| Property | Target Value | Notes |
+| --- | --- | --- |
+| Total swap duration | 0.20–0.30s | From input to full control restored |
+| Input buffering | Movement/jump inputs during swap are buffered, not dropped | Prevents the swap from feeling like a stall |
+| Visual feedback | Radial particle burst in the new element's color + 3-frame silhouette morph | Readable at small mobile sizes (see Visual Identity §8) |
+| Audio feedback | One-shot transformation stinger, element-specific (see Audio Design §9) | < 300ms so it never lags behind the animation |
+| Cooldown | None by default; some puzzle types may impose a short (0.5–1s) cooldown as an explicit obstacle, never as a baseline restriction | Keeps the core loop friction-free |
+| Mid-air swaps | Allowed unless a specific level/puzzle explicitly disables it (rare, telegraphed obstacle) | Needed for combo puzzles like Wood-bridge-then-Fire-dash |
+
+
+### 2.3 Design Pillars Restated as Player Promises
+
+  - "I can always act." — No dead time waiting on animations or menus.
+  - "I can always tell what I am." — Silhouette, color, and particle language are unambiguous at a glance.
+  - "Every element matters." — No element is strictly dominant; each level is tuned so at least two forms are required.
+  - "Failure is cheap." — Instant respawn at the last safe point, no lives system, no punishing backtracking.
+
+
+## 3. Core Elements
+
+Each element is a complete traversal-and-interaction kit. Elements are introduced one at a time across the first quarter of World 1 so players build a solid mental model before combinations are required (see Level Design Philosophy §5).
+
+
+### 3.1 Fire
+
+Identity: aggressive, quick, destructive. Fire clears obstacles and lights the way; it is the "offense" element.
+
+| Category | Details |
+| --- | --- |
+| Abilities | Burn vines and foliage; ignite mechanisms (torches, fuses, fire switches); melt ice blocks and frozen platforms; activate fire-only switches and gates |
+| Traversal | Standard run/jump; slightly faster ground speed (+10%) to sell the "quick" identity |
+| Weaknesses | Extinguished instantly by water hazards (pools, waterfalls, water-switch traps); cannot cross extinguishing zones (mist vents, wet moss) without being forced back to Water or losing the form's active effects |
+| Signature interaction | Standing near flammable terrain (vines, dry wood, fuses) auto-highlights it with a warm glow when Fire is active, telegraphing the intended solution |
+| Color language | Warm red-orange (#C0392B core, #FF8A50 particle highlight) |
+
+
+### 3.2 Water
+
+Identity: fluid, defensive, enabling. Water is the "utility" element — it opens paths Fire and Earth cannot survive.
+
+| Category | Details |
+| --- | --- |
+| Abilities | Swim freely through water volumes (no drowning, controlled buoyancy); extinguish fire hazards and fire-only gates on contact; activate water-only mechanisms (valves, turbines, pressure locks) |
+| Traversal | Reduced gravity and controlled sink/rise while submerged; normal platforming on land, slightly reduced ground friction ("slippery" feel) |
+| Weaknesses | Instantly incapacitated (brief stun + knockback) by electrified water hazards; frozen solid (temporary immobilize) if it enters a frozen-area trap without first being thawed |
+| Signature interaction | Water volumes render with a light ripple/caustic effect only when the character can currently interact with them, reinforcing "this is for me" |
+| Color language | Cool blue (#1F6FB2 core, #7FD1E8 particle highlight) |
+
+
+### 3.3 Earth
+
+Identity: strong, deliberate, structural. Earth is the "heavy" element — it moves mass and takes hits.
+
+| Category | Details |
+| --- | --- |
+| Abilities | Push and pull heavy crates/boulders; summon temporary stone platforms at marked anchor points; activate pressure switches by standing on them (extra weight class vs. other forms); break fragile/cracked floors to reveal lower routes |
+| Traversal | Slower ground speed (−15%), higher jump but with more "weight" in the jump arc; cannot be knocked back by minor hazards |
+| Weaknesses | Crumbling surfaces collapse under Earth's weight after a short delay, so Earth cannot linger on marked cracked terrain; cannot swim (sinks) and cannot cross deep water |
+| Signature interaction | Pressure switches are color-coded and only depress fully under Earth's weight, visually distinguishing them from universal switches |
+| Color language | Warm brown/ochre (#8A5A32 core, #D9A15B particle highlight) |
+
+
+### 3.4 Wood
+
+Identity: flexible, life-giving, connective. Wood is the "structural utility" element — it bridges gaps in space and time.
+
+| Category | Details |
+| --- | --- |
+| Abilities | Extend the body into a temporary rigid bridge across gaps (timed or held); grow vines from seed anchors to create climbable routes; spawn temporary wooden platforms/planks that decay after a set duration; interact with seed pods and nature-triggered objects (pressure-free growth switches) |
+| Traversal | Normal ground speed; bridge/vine states lock the character in place while active (channelled ability, not a movement mode) |
+| Weaknesses | Fire instantly destroys any active Wood structure (bridge, vine, platform) including ones the player is standing on, and Wood itself takes damage from open flame contact |
+| Signature interaction | Growth seed anchors pulse with a soft green glow only when Wood is the active form, and show a countdown shimmer just before a grown structure decays |
+| Color language | Natural green (#3D7A3D core, #8FD17A particle highlight) |
+
+
+### 3.5 Element Comparison Matrix
+
+| Element | Strong vs. | Weak vs. | Primary Verb | Speed | Special Trait |
+| --- | --- | --- | --- | --- | --- |
+| Fire | Vines, ice, fuses | Water, mist | Ignite / Melt | Fast (+10%) | Destroys Wood structures on contact |
+| Water | Fire, water gates | Electricity, frozen traps | Extinguish / Swim | Normal (slippery) | Only form that swims freely |
+| Earth | Crates, pressure switches, fragile floors | Crumbling ground, deep water | Push / Press / Break | Slow (−15%) | Only form pressure switches fully register |
+| Wood | Gaps, seed switches | Fire | Bridge / Grow | Normal | Only form that creates temporary structures |
+
+[Table 3.5 — At-a-glance balance reference used for level design validation; every level should require at least two rows from this table.]
+
+
+## 4. Gameplay Pillars
+
+Every mechanic, level, and monetization decision is validated against these six pillars. If a proposed feature does not clearly serve at least one pillar, it is cut.
+
+| # | Pillar | What It Means In Practice |
+| --- | --- | --- |
+| 1 | Instant Transformation | Swaps are sub-0.3s, input-buffered, and never gate the player behind a menu or animation lock. |
+| 2 | Environmental Puzzle Solving | Every obstacle has a legible elemental solution; puzzles are read, not guessed. |
+| 3 | Combination of Multiple Elements | From World 2 onward, most puzzles require sequencing 2+ elements, not just picking the "correct" one. |
+| 4 | Progressive Mechanic Introduction | New verbs are taught one at a time in a safe sandbox before being combined or tested under pressure. |
+| 5 | Short Satisfying Levels | 60–180s per level; every level ends on a clear, readable success state (goal reached). |
+| 6 | Mobile-Friendly Controls | Playable one-handed in portrait or two-handed in landscape, with all interactive elements reachable by thumb. |
+
+
+## 5. Mobile Controls
+
+
+### 5.1 Control Scheme Overview
+
+Orientation: landscape (primary), to maximize horizontal puzzle visibility and match the genre convention. The layout below assumes landscape; a portrait fallback is described in 5.5.
+
+| Input | Control | Placement |
+| --- | --- | --- |
+| Move Left/Right | Virtual directional pad (thumb-drag zone, not a fixed joystick graphic) or on-screen left/right buttons — configurable in Settings | Bottom-left, thumb reach zone |
+| Jump | Single tap button | Bottom-right, thumb reach zone |
+| Element Swap (quick) | 4 quick-swap buttons arranged in a fan/arc above the jump button | Bottom-right cluster |
+| Element Swap (wheel, optional) | Long-press the currently active element button to open a radial wheel; drag to select, release to confirm | Overlay, centered on the long-pressed button |
+| Pause / Menu | Top-right corner icon | Top-right, out of the active play zone |
+
+
+### 5.2 Quick-Swap vs. Element Wheel
+
+We specify two selection methods because mobile puzzle-platformers must support both twitch play and deliberate play:
+
+  - Quick-Swap Buttons (default, recommended primary interface): four fixed, always-visible buttons, one per element, color-coded and iconified. A single tap instantly commits to that element. This best serves Pillar 1 (Instant Transformation) because there is zero selection ambiguity or drag distance.
+  - Element Wheel (secondary, optional accessibility/preference mode): a radial menu invoked by long-press, useful for players who prefer a single larger input target or who play one-handed with a thumb resting near one corner. Selection still commits on release, and total time from press to confirm must stay within the 0.2–0.3s transformation budget once the player is familiar with the wheel.
+
+Default recommendation: ship with Quick-Swap Buttons as the default control scheme, and expose the Element Wheel as a toggle in Settings > Controls. Playtesting during the prototype phase (see Roadmap) should validate which scheme the majority of testers prefer as default.
+
+
+### 5.3 One-Handed vs. Two-Handed Usability
+
+| Mode | Feasibility | Design Accommodation |
+| --- | --- | --- |
+| Two-handed landscape (primary target) | Fully supported | Left thumb on movement, right thumb on jump/swap cluster; this is the intended default experience |
+| One-handed landscape | Supported via Element Wheel + edge-anchored movement | Movement pad can be dragged to either screen edge in Settings; Element Wheel reduces required reach to a single long-press zone |
+| Portrait one-handed | Supported for casual/menu play, not recommended for precision levels | See 5.5 portrait fallback layout |
+
+
+### 5.4 Accessibility Considerations
+
+  - Adjustable button size and opacity (Settings > Controls > HUD Scale).
+  - Colorblind-safe element iconography: each element uses a distinct icon shape (flame, droplet, rock, leaf) in addition to color, never color alone.
+  - Haptic feedback toggle for transformation and hazard-death events (on by default on supported devices).
+  - Adjustable input deadzone and button remapping (swap left/right cluster, move jump button).
+  - "Hold to confirm" alternative for the Element Wheel to reduce accidental swaps for players with motor-control needs.
+  - No time-limited inputs required to progress the main story path (time trials are optional side objectives only, see §7).
+
+
+### 5.5 Portrait Fallback Layout
+
+Portrait mode is supported for menus, level select, and casual play, using a compressed HUD: movement pad bottom-left, jump + quick-swap stacked bottom-right in a tighter arc. Portrait is not the primary design target — levels are authored and tested in landscape first, and portrait is verified as a secondary pass during QA.
+
+
+## 6. Level Design Philosophy
+
+
+### 6.1 Guiding Principle: Teach, Test, Twist, Combine
+
+Every world follows a four-beat internal rhythm, regardless of theme:
+
+  1. Teach — a new mechanic or element is introduced in a low-risk space where failure is nearly impossible.
+  2. Test — the mechanic is used under mild pressure (simple timing, simple combination with one known element).
+  3. Twist — the mechanic is recombined with an earlier one in a way the player hasn't seen, forcing re-application of prior knowledge.
+  4. Combine — a capstone level (typically the last 1-2 levels of the world) requires fluent, fast use of everything taught so far.
+
+
+### 6.2 World Progression
+
+| World | Theme | New Elements / Systems | Design Focus |
+| --- | --- | --- | --- |
+| World 1 — Foundations | Basic mechanics | Fire, then Water, then Earth, then Wood introduced one at a time; single-element puzzles only | Teach silhouette recognition, swap timing, and each element's core verb in isolation |
+| World 2 — Convergence | Dual-element puzzles | No new elements; introduces puzzles requiring exactly two elements in sequence | Teach sequencing and "undo" thinking (e.g., grow Wood, cross, then burn it behind you) |
+| World 3 — Momentum | Timing challenges | Introduces moving hazards, decaying structures, and swap-under-pressure scenarios | Teach that transformation speed itself is a skill, not just a menu choice |
+| World 4 — Mastery | Advanced combinations | 3–4 element chains, optional hard-mode variants of earlier mechanics | Capstone world; validates full mastery of the elemental toolkit |
+
+
+### 6.3 Difficulty Curve
+
+Difficulty is tuned primarily through three levers, in this order of priority: (1) number of elements required in a single puzzle chain, (2) time pressure / hazard movement speed, (3) spatial complexity (level size, number of screens). We deliberately avoid tuning difficulty through punishing input precision — the game should feel hard because of the puzzle logic, not because of tight platforming.
+
+| World | Avg. elements per puzzle | Time pressure | Level length (avg.) | Target fail rate (external testers) |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | None | 45–75s | < 10% |
+| 2 | 2 | Low | 60–100s | 10–20% |
+| 3 | 2–3 | Moderate | 75–120s | 20–30% |
+| 4 | 3–4 | Moderate–High | 90–150s | 25–35% |
+
+
+### 6.4 Level Length & Pacing Rules
+
+  - No level should require more than 3 minutes for a first-time player who understands the mechanics taught so far.
+  - Every level has exactly one required solution path and may have zero or more optional collectible side-paths (see §10).
+  - Levels never introduce more than one new concept without a preceding Teach beat.
+  - A player should never be more than ~10 seconds from their last checkpoint/attempt start after a failure.
+
+
+## 7. Puzzle Examples
+
+Concrete, buildable examples an AI coding agent or level designer can use as templates. Each example lists the required elements, the beat it belongs to, and the intended "aha" moment.
+
+
+### 7.1 Single-Element Puzzles (World 1)
+
+| Puzzle | Element(s) | Beat | Aha Moment |
+| --- | --- | --- | --- |
+| Burning Poisonous Vines | Fire | Teach | Vines blocking the path glow warm when Fire is active — burn them to clear the route |
+| Swimming Through a Flooded Corridor | Water | Teach | A corridor is fully submerged; only Water can traverse it without drowning |
+| Pressing a Stone Switch | Earth | Teach | A switch only depresses under Earth's extra weight, opening a gate |
+| Growing a Vine Ladder | Wood | Teach | A seed anchor at the base of a tall wall sprouts a climbable vine |
+
+
+### 7.2 Dual-Element Puzzles (World 2)
+
+| Puzzle | Sequence | Aha Moment |
+| --- | --- | --- |
+| Wooden Bridge Over Lava | Wood → cross → (bridge remains, no Fire nearby) | Player realizes Wood bridges are permanent unless burned, unlocking route-planning |
+| Melt-and-Swim | Fire (melt ice dam) → Water (swim through released flood) | Two elements used back-to-back to transform the level geometry itself |
+| Press-and-Push | Earth (press pressure switch to open gate) → Earth (push crate through gate before it re-closes) | Same element used twice for different verbs in one chain |
+| Extinguish-to-Cross | Fire (burn vine blocking path) → Water (extinguish a fire barrier further ahead) | Teaches that puzzles are read left-to-right but solved by scanning the whole screen first |
+
+
+### 7.3 Timing Puzzles (World 3)
+
+| Puzzle | Mechanic | Aha Moment |
+| --- | --- | --- |
+| Decaying Plank Rush | Wood platform decays in 3s; player must swap to Fire or Earth to interact with what's on the far side before it vanishes | Transformation speed becomes a scoring/survival factor, not just a puzzle key |
+| Rising Water Chamber | Water level rises steadily; player alternates Earth (build platform) and Water (swim gap) to stay ahead of it | Forces proactive planning rather than reactive puzzle-solving |
+| Timed Fire Gate | A fire switch must be ignited and crossed before a closing gate resets | First real execution-under-pressure test in the game |
+
+
+### 7.4 Advanced Combination Puzzles (World 4)
+
+| Puzzle | Sequence | Aha Moment |
+| --- | --- | --- |
+| The Four-Step Vault | Earth (press switch) → Wood (grow bridge) → Fire (ignite far mechanism) → Water (extinguish a resulting fire hazard) → reach goal | Full-kit capstone puzzle; validates total mastery |
+| Chain Reaction Causeway | Fire ignites a fuse that collapses an Earth platform, revealing a Water channel, which floods a Wood seed into growth | Introduces multi-stage environmental chain reactions (see §8) |
+
+
+## 8. Advanced Mechanics
+
+
+### 8.1 Element Combo Interactions
+
+Combo interactions are pairwise rules that apply consistently across every level, so players can reason about new puzzles using knowledge from old ones. These rules are the puzzle "grammar" of the game.
+
+| Combo | Result | Design Use |
+| --- | --- | --- |
+| Fire + Wood | Wood structure is destroyed instantly on contact with active flame | Creates "burn the bridge behind you" and "don't bring fire near the vine bridge" puzzles |
+| Fire + Earth | Fire can ignite fuses embedded in Earth terrain; Earth itself is fireproof and unaffected otherwise | Long-range trigger puzzles (ignite a fuse that affects a distant Earth mechanism) |
+| Fire + Ice (environmental) | Fire melts ice blocks into a temporary water hazard/pool | Chain-reaction puzzles; also a resource — melted water can extinguish other fire hazards |
+| Water + Wood | Water causes seed pods to sprout instantly (accelerated growth) rather than requiring Wood's own grow ability | Alternate solution paths; rewards experimentation |
+| Water + Fire | Water extinguishes fire hazards and fire-lit fuses on contact | Core "undo" tool; also used defensively against fire traps |
+| Water + Electricity (environmental) | Water becomes hazardous while an electrified switch nearby is active | Risk/reward puzzle layer introduced in World 3–4 |
+| Earth + Water | Earth platforms submerged in water become slippery (reduced friction) but do not dissolve | Adds light platforming variety without breaking Earth's "solid" identity |
+| Earth + Fragile Floor | Earth's weight cracks and eventually breaks marked fragile floors after a short delay | Vertical-descent puzzles; reveals hidden lower routes |
+
+
+### 8.2 Temporary Environmental Changes
+
+Several interactions leave the level state altered for the remainder of the attempt, which is core to the game's "solve, don't just execute" identity:
+
+  - Melted ice remains water until the level attempt resets (checkpoint respawn does not undo global melts within the same attempt, to avoid punishing exploration).
+  - Grown Wood structures persist until burned or until their decay timer elapses (decaying structures are always visually telegraphed at least 2 seconds before disappearing).
+  - Broken fragile floors remain broken for the rest of the attempt.
+  - Pressure switches held by a pushed crate stay active as long as the crate remains on them, independent of the player's current element.
+
+
+### 8.3 Optional Collectibles & Hidden Routes
+
+| Collectible Type | Purpose | Typical Placement |
+| --- | --- | --- |
+| Element Shards | Cosmetic currency; 1–3 per level, always optional | Behind a combo puzzle slightly harder than the level's main path |
+| Hidden Route Star | One of the level's 3-star conditions (see §10) | Requires noticing an unlit/unhighlighted interactive object off the critical path |
+| Lore Fragments (stretch goal) | Light worldbuilding, fully optional, no gameplay effect | Hidden in dead-end alcoves reachable only via non-obvious combos |
+
+
+### 8.4 Challenge Objectives
+
+Each level defines up to three optional challenge objectives, surfaced after first completion so they never pressure a first playthrough:
+
+  - Speed target — complete the level under a par time.
+  - No-swap-waste — complete the level using at or below a minimum number of element swaps (rewards efficient route planning, not swap-avoidance).
+  - Full clear — collect all Element Shards in the level.
+
+
+## 9. Progression System
+
+
+### 9.1 Level Unlock System
+
+Levels unlock linearly within a world (Level N unlocks on completion of Level N−1), and worlds unlock on collecting a minimum star threshold from the previous world rather than requiring 100% completion. This keeps skilled players moving forward while still rewarding thoroughness.
+
+| World | Unlock Requirement |
+| --- | --- |
+| World 1 | Available from game start |
+| World 2 | Earn at least 30 of World 1's 45 possible stars (15 levels × 3 stars) |
+| World 3 | Earn at least 30 of World 2's 45 possible stars |
+| World 4 | Earn at least 30 of World 3's 45 possible stars |
+
+
+### 9.2 Star Rating System
+
+Each level contains exactly three optional golden Star Collectibles. At level completion, the awarded star rating equals the number of golden Star Collectibles gathered in that attempt (0–3). Each collectible contributes exactly one star; time and swap targets remain separate challenge records and never multiply the star count. Element Shards remain a separate cosmetic currency and do not affect star rating.
+
+
+### 9.3 Collectibles & Cosmetic Rewards
+
+  - Element Shards accumulate globally and are spent on cosmetic character skins per element (recolors, particle trail variants).
+  - Lore Fragments (stretch goal) unlock short flavor-text entries in a Codex menu; purely for engagement, no mechanical effect.
+  - A per-world "Master Badge" is awarded for a full 3-star clear of every level in that world.
+
+
+### 9.4 Replayability
+
+  - Star and challenge-objective chasing gives every level replay value beyond first clear.
+  - Daily rotating "Challenge Level" (post-launch, see Future Expansion §16) reuses existing tilesets with new switch/hazard layouts.
+  - Leaderboards (optional, requires backend — see Future Expansion) for par-time and minimum-swap records per level.
+
+
+### 9.5 Difficulty Curve Summary
+
+See §6.3 for the full quantitative curve. At a system level, the curve is enforced by: increasing required elements per puzzle, increasing hazard/timing pressure, and — only as a final lever — increasing level size. This ordering keeps the game feeling "smarter," not "twitchier," as it gets harder.
+
+
+## 10. Monetization
+
+Monetization is designed around a single hard rule: no ad or payment is ever required to complete a level or progress through the main game. Ads and IAPs only accelerate cosmetic progression or remove friction, never gate content.
+
+
+### 10.1 Rewarded Ads (Primary Ad Format)
+
+| Placement | Reward | Player Control |
+| --- | --- | --- |
+| Post-level-fail (3rd consecutive fail on a level) | Optional "Hint" — highlights the next required element for 3 seconds | Fully opt-in via a button; never auto-played |
+| Level Select screen | Double Element Shard earnings on next level completion | Opt-in via a button, capped at 3 per day per player to avoid ad fatigue |
+| Daily bonus | Small Element Shard bonus for watching one ad per day | Opt-in; visible countdown to next availability |
+
+
+### 10.2 Optional Interstitial Ads
+
+  - Shown at most once every 3–4 level completions, never on a first attempt at a level and never immediately after a fail (to avoid punishing frustration with an ad).
+  - Fully removable via the one-time IAP described in 10.3.
+  - A frequency cap and cooldown are configured server-side (remote config) so they can be tuned post-launch without a client update.
+
+
+### 10.3 Premium Upgrade
+
+| Item | Price Band (indicative) | Contents |
+| --- | --- | --- |
+| Remove Ads | $2.99–$3.99 | Removes all interstitial ads permanently; rewarded ads remain available as an opt-in choice since players may still want the bonus rewards |
+| Remove Ads + Skin Bundle | $5.99–$7.99 | Remove Ads plus 4 exclusive cosmetic element skins (one per element), no gameplay effect |
+
+
+### 10.4 Cosmetics
+
+Cosmetic skins recolor the character's active-element silhouette and particle trail. They are purely visual, purchasable with earned Element Shards or unlocked via the premium bundle, and never affect hitboxes, ability behavior, or difficulty — preserving the "no pay-to-win" principle.
+
+
+### 10.5 Explicit Non-Goals
+
+  - No energy/lives system that gates play by a timer.
+  - No paid difficulty skips.
+  - No loot boxes or randomized paid rewards.
+  - No ads during active gameplay (mid-level).
+
+
+## 11. Audio Design
+
+
+### 11.1 Element Transformation Sounds
+
+| Element | Sound Character | Duration |
+| --- | --- | --- |
+| Fire | Sharp whoosh + crackle burst | < 300ms |
+| Water | Splash droplet + soft ring resonance | < 300ms |
+| Earth | Low thud + gravel shift | < 300ms |
+| Wood | Organic creak + soft chime (growth motif) | < 300ms |
+
+All four stingers share a common rhythmic "shape" (a fast attack, short decay) so they read as one cohesive transformation system rather than four unrelated sound effects — this reinforces Pillar 1.
+
+
+### 11.2 Ambient Sounds
+
+  - Each world has a distinct ambient bed (World 1: gentle wind and birdsong; World 2: distant water flow; World 3: rhythmic mechanical ticking to underscore timing; World 4: layered, subtly tenser ambience combining prior motifs).
+  - Ambient audio ducks (reduces volume) briefly during transformation stingers and key puzzle-solve moments so feedback is never masked.
+
+
+### 11.3 Puzzle Feedback Sounds
+
+| Event | Sound |
+| --- | --- |
+| Switch activated | Bright confirmation chime, pitched by switch type (fire/water/earth/universal) |
+| Structure decay warning | Rising tick/pulse starting 2s before decay |
+| Hazard death | Soft, non-punishing "poof" — never harsh or frustrating, to keep failure low-stakes |
+| Level complete | Short triumphant fanfare, 1.5–2s, non-looping |
+| Collectible pickup | Light sparkle chime, pitch increases slightly with each shard collected in sequence |
+
+
+### 11.4 UI Sounds
+
+  - Minimal, soft "tap" confirmation for menu buttons.
+  - Distinct, slightly warmer tone for star-earned and level-unlock moments.
+  - All UI sounds respect a separate UI-volume slider independent of SFX and Music sliders.
+
+
+### 11.5 Music Direction
+
+Light, melodic, loopable tracks with a modern casual-mobile character (think mallet percussion, plucked strings, soft synth pads) — upbeat but not distracting, since puzzles require focus. Each world's music layers in the element motifs established in the transformation stingers, so the score subtly reinforces which elements a world is teaching. Music tempo increases modestly (not tempo-syncing gameplay, just mood) from World 1 to World 4 to track rising tension.
+
+
+## 12. Visual Identity
+
+
+### 12.1 Color Palette
+
+| Palette Role | Colors | Usage |
+| --- | --- | --- |
+| Element core colors | Fire #C0392B, Water #1F6FB2, Earth #8A5A32, Wood #3D7A3D | Character form, UI buttons, switches, hazards |
+| Element highlight colors | Fire #FF8A50, Water #7FD1E8, Earth #D9A15B, Wood #8FD17A | Particles, glows, interactive-object highlights |
+| Neutral environment palette | Soft creams, pale greys, muted pastels | Background/terrain, kept low-saturation so element colors pop |
+| UI accent | #5B3E96 (soft violet) | HUD chrome, buttons, menus — deliberately outside the four element hues to avoid confusion |
+
+
+### 12.2 Character Silhouettes
+
+Each element form shares the same base proportions (so the player never has to relearn hitbox size) but has a distinct silhouette treatment: Fire has flame-tipped extremities and a flickering outline; Water has a rounded, flowing outline with a translucent lower body; Earth is blockier and wider with visible rock-plate seams; Wood has slightly elongated limbs with leaf/vine accents at the joints. This ensures element identity is readable even in grayscale or by colorblind players.
+
+
+### 12.3 Particle Effects
+
+  - Transformation burst: radial particle ring in the new element's highlight color, 12–16 particles, 0.3s lifetime.
+  - Ambient idle particles per element (embers for Fire, droplets for Water, dust motes for Earth, floating leaves for Wood) at low density so they read as flavor, not noise.
+  - Interaction particles (e.g., vine burning, ice melting) are capped at a budget of 40 concurrent particles per effect to protect frame rate on mid-tier devices.
+
+
+### 12.4 Animation Priorities
+
+  1. Transformation morph (highest priority — this is the core fantasy).
+  2. Idle and run cycles per element (distinct enough to read at a glance).
+  3. Ability-use animations (burn, swim stroke, push, grow) — must clearly telegraph effect timing so puzzles feel fair.
+  4. Death/respawn — quick and low-stakes, under 0.5s.
+  5. UI/menu transitions — lowest priority, can reuse simple fades/slides.
+
+
+### 12.5 Readability on Small Screens
+
+  - Minimum on-screen character size tested at 5.5" device reference resolution; silhouette must remain distinguishable at that scale.
+  - Interactive objects always carry a secondary non-color cue (icon or shape) in addition to color-coding.
+  - HUD elements maintain a minimum 44×44dp touch target per platform mobile HCI guidelines, with generous spacing to avoid accidental multi-touch on the swap cluster.
+  - Background contrast is kept deliberately low relative to foreground interactive elements, following a consistent "foreground = saturated, background = muted" rule across all worlds.
+
+
+
+==============================================================================
+PART II — TECHNICAL SOFTWARE DESIGN DOCUMENT
+==============================================================================
+
+This part defines the software architecture. It is written to be implementation-ready for a human developer or an AI coding agent (Cursor, Copilot, Claude Code) without prescribing exact source code — only structure, responsibilities, and contracts between systems.
+
+
+## 13. High-Level Architecture
+
+Element Shift is built as a Flutter application that hosts a single full-screen Flame `GameWidget`. Flutter owns the app shell (navigation, settings, store/IAP integration, platform services); Flame owns everything inside the game viewport (the game loop, rendering, components, physics/collision, and input while in-game). The boundary between the two is intentionally thin and one-directional where possible: Flutter pushes configuration into Flame (which level to load, audio/haptics settings) and Flame reports events out (level complete, star earned, ad-trigger requested) via a typed event bus / callback interface rather than tight coupling.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Flutter App Shell                     │
+│  ┌───────────┐  ┌────────────┐  ┌───────────┐  ┌──────────┐  │
+│  │ Navigation │  │ Settings /  │  │  IAP /     │  │  Ads     │  │
+│  │ (go_router)│  │ Accessibility│ │  Store SDK │  │  SDK     │  │
+│  └─────┬─────┘  └─────┬──────┘  └─────┬──────┘  └────┬─────┘  │
+│        │              │               │              │        │
+│        └──────────────┴───────┬───────┴──────────────┘        │
+│                               │                                │
+│                     AppStateController                        │
+│              (Riverpod/Provider — cross-cutting state)        │
+│                               │                                │
+│                     ┌─────────▼─────────┐                     │
+│                     │   GameWidget<Element│                    │
+│                     │       ShiftGame>    │                    │
+│                     └─────────┬─────────┘                     │
+└───────────────────────────────┼───────────────────────────────┘
+                                │  typed events (up) /
+                                │  config + commands (down)
+┌───────────────────────────────▼───────────────────────────────┐
+│                      Flame Engine Layer                       │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌─────────────┐ │
+│  │ SceneRouter │ │ LevelWorld │ │ Input Layer│ │ AudioManager│ │
+│  │ (FlameRouter)│ (components)│ │            │ │             │ │
+│  └────────────┘ └────────────┘ └────────────┘ └─────────────┘ │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌─────────────┐ │
+│  │ Collision   │ │ Element    │ │ Save/Load  │ │ Particle /  │ │
+│  │ System      │ │ StateMachine│ │ Bridge     │ │ Anim System │ │
+│  └────────────┘ └────────────┘ └────────────┘ └─────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+[Figure 13.1 — High-level layered architecture. See Part III for the corresponding class and flow diagrams.]
+
+
+### 13.1 Architectural Principles
+
+  1. Single source of truth per concern: level layout data owns geometry, PlayerStateMachine owns element state, SaveService owns persisted progress. No system duplicates another's state.
+  2. Data-driven levels: levels are authored as structured data (JSON) consumed by a generic LevelLoader, not hard-coded per-level classes, so new levels require no code changes.
+  3. Composition over inheritance for game objects: Flame's component/mixin model is used to compose behavior (e.g., a `HazardComponent` mixed with `FireVulnerable`) rather than deep class hierarchies.
+  4. Testable core logic: puzzle/interaction rules (e.g., "Fire destroys Wood") live in plain Dart logic classes decoupled from rendering, so they can be unit tested without booting Flame.
+  5. Explicit contracts at the Flutter/Flame boundary: a small, documented set of events and commands crosses that boundary — no ad-hoc global state.
+
+
+## 14. Flutter Project Structure
+
+Top-level structure separates the Flutter app shell from the Flame game module, and keeps game content (levels, art references) as data rather than code.
+
+```
+element_shift/
+├── lib/
+│   ├── main.dart                     # App entry point, bootstraps providers
+│   ├── app/
+│   │   ├── app.dart                  # MaterialApp/router root widget
+│   │   ├── router.dart               # go_router route definitions
+│   │   └── theme.dart                # Flutter-side theme (menus, HUD chrome)
+│   ├── shell/                        # Flutter-only screens (non-game UI)
+│   │   ├── home/                     # Main menu
+│   │   ├── level_select/             # World & level select screens
+│   │   ├── settings/                 # Settings, accessibility, controls
+│   │   ├── store/                    # Cosmetics / IAP screen
+│   │   └── codex/                    # Lore fragments (stretch)
+│   ├── game/                         # Flame module (see §15 for internal structure)
+│   │   ├── element_shift_game.dart   # FlameGame subclass, root of game layer
+│   │   ├── components/
+│   │   ├── elements/
+│   │   ├── levels/
+│   │   ├── systems/
+│   │   └── scenes/
+│   ├── services/                     # Cross-cutting services, platform-agnostic
+│   │   ├── save_service.dart
+│   │   ├── audio_service.dart
+│   │   ├── ads_service.dart
+│   │   ├── iap_service.dart
+│   │   └── analytics_service.dart
+│   ├── state/                        # App-wide state (Riverpod providers)
+│   │   ├── progress_provider.dart
+│   │   ├── settings_provider.dart
+│   │   └── economy_provider.dart      # Element Shards, cosmetics owned
+│   └── models/                       # Shared data models (Dart classes)
+│       ├── level_model.dart
+│       ├── world_model.dart
+│       ├── player_progress_model.dart
+│       └── element_type.dart          # enum ElementType { fire, water, earth, wood }
+├── assets/
+│   ├── levels/                       # JSON level definitions (see §18)
+│   ├── images/
+│   │   ├── characters/<element>/
+│   │   ├── tiles/<world>/
+│   │   ├── fx/
+│   │   └── ui/
+│   ├── audio/
+│   │   ├── sfx/
+│   │   ├── music/
+│   │   └── ui/
+│   └── fonts/
+├── test/                             # Unit + widget tests, mirrors lib/
+├── integration_test/                 # Flame/integration tests
+└── pubspec.yaml
+```
+
+[Figure 14.1 — Top-level Flutter project structure.]
+
+
+### 14.1 Key Packages
+
+| Concern | Recommended Package | Notes |
+| --- | --- | --- |
+| Game engine | flame | Core engine |
+| Physics/collision helpers | flame (built-in CollisionDetection), flame_forge2d optional | Start with Flame's built-in AABB/hitbox collision; only add Forge2D if physics complexity demands it |
+| State management (app shell) | flutter_riverpod | Chosen for testability and clear provider boundaries |
+| Routing (app shell) | go_router | Deep-linkable menu/level-select navigation |
+| Audio | flame_audio (wraps audioplayers) | Pooled SFX + looping music |
+| Persistence | shared_preferences (simple key/values) + hive or sqflite (structured progress) | See §17 Save System |
+| Ads | google_mobile_ads | Rewarded + interstitial formats |
+| IAP | in_app_purchase | Cross-platform store abstraction |
+| Analytics (optional) | firebase_analytics or a self-hosted alternative | Used for retention/monetization tuning post-launch |
+
+
+## 15. Flame Game Structure
+
+The `game/` module is organized around Flame's component tree, with a clear split between the persistent game shell (always alive) and the per-level world (created/destroyed on level load/unload).
+
+```
+game/
+├── element_shift_game.dart      # FlameGame root; owns SceneRouter, global overlays
+├── components/
+│   ├── player/
+│   │   ├── player_component.dart        # Root player entity
+│   │   ├── player_input_component.dart  # Reads input, emits intents
+│   │   ├── player_physics_component.dart# Velocity/gravity/collision response
+│   │   └── player_visual_component.dart # Sprite/animation per element
+│   ├── hazards/                          # FireHazard, WaterHazard, ElectricHazard, etc.
+│   ├── interactables/                    # Switches, crates, seed anchors, gates
+│   ├── structures/                       # WoodBridge, StonePlatform (spawned at runtime)
+│   └── fx/                               # Particle components, camera shake helper
+├── elements/
+│   ├── element_type.dart                 # (re-exported from models for game-layer use)
+│   ├── element_ability.dart              # Abstract ability contract
+│   ├── fire_ability.dart
+│   ├── water_ability.dart
+│   ├── earth_ability.dart
+│   └── wood_ability.dart
+├── levels/
+│   ├── level_loader.dart                 # Parses JSON → LevelWorld
+│   ├── level_world.dart                  # Component holding all level entities
+│   └── tile_registry.dart                # Maps tile IDs to components/behaviors
+├── systems/
+│   ├── element_state_machine.dart        # Player's current element + swap logic
+│   ├── collision_system.dart             # Central collision callbacks/dispatch
+│   ├── checkpoint_system.dart
+│   ├── objective_system.dart             # Stars, shards, challenge objectives
+│   └── camera_system.dart
+└── scenes/
+    ├── boot_scene.dart
+    ├── level_scene.dart
+    ├── level_complete_overlay.dart
+    └── pause_overlay.dart
+```
+
+[Figure 15.1 — Flame game module structure.]
+
+
+### 15.1 Component Responsibilities
+
+| Component | Responsibility | Does NOT do |
+| --- | --- | --- |
+| PlayerComponent | Composes input, physics, visual, and ability sub-components; the single entity the rest of the game queries for player state | Does not contain puzzle logic or level-specific rules |
+| ElementStateMachine | Holds current ElementType, validates and executes swap requests, fires transformation events (for FX/audio) | Does not know about specific level content |
+| ElementAbility (per element) | Defines what happens on ability-use input for that element (e.g., FireAbility.ignite(target)) | Does not manage animation frames directly — delegates to PlayerVisualComponent |
+| LevelWorld | Owns all spawned entities for the current level: hazards, interactables, structures, goal, checkpoints | Does not manage global app state (settings, economy) |
+| ObjectiveSystem | Tracks shard collection, timer, swap count; computes star result on level completion | Does not persist results — hands off to SaveService |
+
+
+## 16. Scene Management
+
+Scene/screen flow is split across two layers: Flutter's router handles non-game screens (menus), while Flame's own overlay/scene system handles in-game states (playing, paused, level-complete) so the game loop doesn't have to tear down and rebuild the GameWidget for every UI state.
+
+
+### 16.1 Flutter-Level Navigation (Screens)
+
+```
+SplashScreen → HomeScreen ─┬─→ WorldSelectScreen → LevelSelectScreen → GameScreen(levelId)
+                           ├─→ SettingsScreen
+                           ├─→ StoreScreen
+                           └─→ CodexScreen (stretch)
+
+GameScreen hosts a single persistent GameWidget<ElementShiftGame> for the session;
+leaving GameScreen disposes the current LevelWorld but can keep ElementShiftGame warm
+if the player is likely to return (e.g., replaying via 'Next Level').
+```
+
+
+### 16.2 Flame-Level Scene States
+
+Within a single GameScreen session, Flame uses overlays (Flutter widgets drawn above the Canvas) plus a lightweight internal `GameSceneState` enum, rather than swapping FlameGame instances, to keep transitions instant:
+
+| State | Description | Overlay(s) Shown |
+| --- | --- | --- |
+| Loading | LevelLoader parsing JSON and instantiating LevelWorld | LoadingOverlay (spinner/element icon animation) |
+| Playing | Normal gameplay; input active | HUD (movement, jump, swap cluster, pause button) |
+| Paused | Game loop paused (update() early-returns); input redirected to pause menu | PauseOverlay |
+| LevelComplete | Objective results computed, entities frozen | LevelCompleteOverlay (stars, shard count, next/retry buttons) |
+| LevelFailed (rare, only for optional fail states) | Most 'failure' is just respawn-to-checkpoint, not a full scene state — reserved for edge cases like intentional soft-lock detection | RespawnOverlay (brief, auto-dismisses) |
+
+
+### 16.3 Scene Flow Diagram
+
+```
+        ┌───────────┐   load level JSON   ┌───────────┐
+        │  Loading   │────────────────────▶│  Playing   │
+        └───────────┘                      └─────┬─────┘
+                                                   │ pause
+                                        respawn ▲  ▼
+                                         ┌───────┴────┐
+                                         │   Paused    │
+                                         └───────┬────┘
+                                                  │ resume
+                                                  ▼
+                                            back to Playing
+                                                  │
+                                   reach goal      ▼
+                                         ┌────────────────┐
+                                         │  LevelComplete  │
+                                         └───────┬────────┘
+                                    retry │       │ next level
+                                          ▼       ▼
+                                      Loading   Loading
+```
+
+
+## 17. State Management
+
+State is split into three tiers with different lifetimes and different tools, to avoid the common mobile-game mistake of one giant global game state object.
+
+| Tier | Examples | Lifetime | Tool |
+| --- | --- | --- | --- |
+| App state (Flutter shell) | Settings, unlocked worlds, owned cosmetics, Element Shard balance | Persisted across sessions | Riverpod providers backed by SaveService |
+| Session state (per game session) | Current level, current attempt number, HUD visibility, pause state | Lives for the GameScreen session | Riverpod (ephemeral providers) + ElementShiftGame fields |
+| Level-runtime state (per attempt) | Player position, current element, entity positions, objective progress, checkpoint reached | Reset on retry/respawn | Owned by LevelWorld and its child components |
+
+
+### 17.1 Player Element State Machine
+
+The player's element is modeled as an explicit finite state machine rather than a raw enum field, so swap validity, transition events, and edge cases (e.g., swap requested mid-death-animation) are handled in one place.
+
+```
+        ┌────────┐  swapRequested(Water)  ┌────────┐
+   ┌───▶│  Fire   │────────────────────────▶│Swapping │
+   │    └────────┘                          └────┬────┘
+   │         ▲                                     │ 0.2–0.3s
+   │         │                                      ▼
+   │    ┌────┴───┐    swapRequested(Fire)      ┌────────┐
+   │    │ Water   │◀───────────────────────────│ Water   │
+   │    └────────┘                              (settled)
+   │                                            └────────┘
+   │  (Earth and Wood states follow the same pattern;
+   │   'Swapping' is a shared transient state for ANY
+   └── element pair, parameterized by fromElement/toElement)
+```
+
+[Figure 17.1 — Simplified element state machine (full version in Part III §19.2 uses all four elements).]
+
+
+### 17.2 Event Bus (Flutter ↔ Flame boundary)
+
+A small set of typed, one-directional events crosses the Flutter/Flame boundary. This is intentionally a short, closed list — new cross-boundary needs should extend this table, not create ad-hoc callbacks.
+
+| Direction | Event/Command | Payload | Purpose |
+| --- | --- | --- | --- |
+| Flame → Flutter | LevelCompleted | levelId, stars, shardsCollected, timeElapsed, swapCount | Trigger SaveService write, show completion UI, evaluate rewarded-ad prompts |
+| Flame → Flutter | CheckpointReached | levelId, checkpointIndex | Optional analytics event |
+| Flame → Flutter | RewardedAdRequested | context (hint/doubleShards) | Flutter invokes AdsService, then calls back into Flame with result |
+| Flutter → Flame | LoadLevel | levelId | Instructs LevelLoader to build a new LevelWorld |
+| Flutter → Flame | ApplySettings | controlScheme, hudScale, hapticEnabled, audioLevels | Pushes live settings changes into the running game |
+| Flutter → Flame | GrantHint / GrantDoubleShards | - | Result of a completed rewarded ad watch |
+
+
+## 18. Save System
+
+
+### 18.1 Data to Persist
+
+| Data | Structure | Storage Choice |
+| --- | --- | --- |
+| Level results | Map<levelId, {stars, bestTimeMs, minSwaps, shardsCollected}> | Structured local DB (Hive/sqflite) |
+| World unlock state | Derived from level results at read time (not separately stored) to avoid sync bugs | Computed, not stored |
+| Economy | elementShardBalance (int), ownedSkins (Set<SkinId>) | Structured local DB |
+| Settings | controlScheme, hudScale, audioLevels, hapticEnabled, colorblindIconMode | shared_preferences (simple key-values) |
+| Ad/IAP state | adsRemoved (bool), lastInterstitialShownAt (timestamp) | shared_preferences |
+
+
+### 18.2 Save Architecture
+
+A single `SaveService` (Flutter-layer, injected via Riverpod) is the only component permitted to read/write persistent storage. Flame-layer systems never touch storage directly — they emit events (see §17.2) that the Flutter layer translates into SaveService calls. This keeps the Flame layer portable and testable without a storage backend.
+
+```
+PlayerComponent / ObjectiveSystem
+        │  LevelCompleted(levelId, stars, time, swaps, shards)
+        ▼
+   AppStateController (Flutter)
+        │
+        ▼
+    SaveService.recordLevelResult(...)
+        │
+        ▼
+  Local DB (Hive box: 'progress')  ──periodic──▶  (optional) cloud backup
+                                                   via platform save (Play Games /
+                                                   iCloud) — stretch goal
+```
+
+
+### 18.3 Save Timing & Integrity Rules
+
+  - Write on every LevelCompleted event immediately — never batch level results, since losing a completion is the worst-case failure for this genre.
+  - Settings and economy changes are debounced (e.g., 500ms) to avoid excessive disk writes during rapid UI interaction (like dragging a volume slider).
+  - Star/best-time records are only ever improved, never overwritten downward — SaveService.recordLevelResult must merge with max(stars), min(bestTimeMs).
+  - A schema version field is stored alongside save data from day one, so future updates can run migrations instead of resetting progress.
+
+
+### 18.4 Cloud Save (Stretch Goal)
+
+Post-launch, local saves can be mirrored to Google Play Games Services (Android) and Game Center (iOS) save state APIs, keyed by the same schema-versioned structure, to support device transfer without requiring a custom backend.
+
+
+## 19. Asset Organization
+
+
+### 19.1 Directory Convention
+
+See Figure 14.1 for the top-level `assets/` layout. The guiding rule: assets are organized by content type first, then by element/world — mirroring how an artist or AI agent would be asked to produce a batch of assets ("give me all Fire character frames") rather than by which level uses them.
+
+```
+assets/images/characters/fire/
+├── idle_spritesheet.png      (+ .json atlas)
+├── run_spritesheet.png
+├── jump_spritesheet.png
+├── ability_spritesheet.png   # burn/ignite animation
+├── transform_in_spritesheet.png   # morphing INTO fire
+└── death_spritesheet.png
+
+assets/images/tiles/world1/
+├── terrain_tileset.png (+ .json atlas — Tiled-compatible)
+├── hazards_tileset.png
+└── interactables_tileset.png
+```
+
+
+### 19.2 Naming Convention
+
+| Asset Type | Convention | Example |
+| --- | --- | --- |
+| Sprite sheets | <entity>_<state>_spritesheet.png | fire_idle_spritesheet.png |
+| Sprite atlases (JSON) | same basename as sheet, .json | fire_idle_spritesheet.json |
+| Tilesets | <world>_<category>_tileset.png | world2_hazards_tileset.png |
+| SFX | sfx_<category>_<name>.ogg | sfx_transform_fire.ogg |
+| Music | music_<world>_theme.ogg | music_world3_theme.ogg |
+| Level data | level_<world>_<index>.json | level_w1_07.json |
+
+
+### 19.3 Asset Pipeline
+
+```
+  Source art (Figma/Aseprite/          Export           Optimize            Runtime
+  Illustrator, per element/world)  ───────────▶  PNG+JSON atlas ───▶ TexturePacker ───▶ assets/images/*
+                                                  (trim, pack)        or Flame's own
+                                                                     atlas tooling
+
+  Level layout (Tiled editor, .tmx)  ───────────▶  Export to JSON ───▶ Validate against ───▶ assets/levels/*
+                                                   (Tiled JSON format)  level schema (§21)
+
+  Audio (recorded/licensed WAV)  ───────────▶  Convert to OGG ───▶ Loudness-normalize ───▶ assets/audio/*
+                                                (compression)        (-16 LUFS target)
+```
+
+[Figure 19.1 — Asset pipeline from source to runtime, covering art, levels, and audio.]
+
+
+### 19.4 Budgets
+
+| Asset Category | Budget (guideline) |
+| --- | --- |
+| Per-element sprite sheet (all animations combined) | < 2048×2048px, < 1.5 MB compressed |
+| Per-world tileset | < 2048×2048px, < 2 MB compressed |
+| Total initial download (Android App Bundle, World 1 assets only + shared) | < 60 MB; remaining worlds delivered via Play Asset Delivery / on-demand fetch |
+| SFX file | < 150 KB each (short one-shots) |
+| Music track | < 3 MB each (loopable OGG) |
+
+
+## 20. Audio Management
+
+An `AudioManager` singleton-style service (wrapping flame_audio) owns three independent channels — Music, SFX, and UI — each with its own volume control, plus a lightweight priority/pooling system for SFX so rapid element swaps never cause audio glitching or channel exhaustion.
+
+
+### 20.1 Responsibilities
+
+| Responsibility | Detail |
+| --- | --- |
+| Channel volume control | Independent Music/SFX/UI sliders, persisted via Settings (see §18.1) |
+| SFX pooling | Pre-loads and pools the 4 transformation stingers + common puzzle-feedback sounds at scene load to avoid first-play latency; caps concurrent SFX instances (e.g., 8) with oldest-instance eviction |
+| Music crossfade | 0.5–1s crossfade between world themes on level transition; ducking (see §11.2) on key feedback moments |
+| Haptics coordination | Triggers device haptic feedback in sync with transformation and hazard-death SFX, gated by the Settings haptics toggle |
+
+
+### 20.2 Event-Driven Playback
+
+Gameplay systems never call audio playback APIs directly; they emit semantic events (e.g., `ElementTransformed(to: ElementType.water)`, `SwitchActivated(type: SwitchType.fire)`) that AudioManager subscribes to and maps to specific sound assets. This indirection means sound design can be iterated (remapped, remixed) without touching gameplay code — an important property for AI-agent-driven iteration.
+
+
+## 21. Animation Management
+
+
+### 21.1 Animation Data Model
+
+Each element defines a fixed animation state set so the PlayerVisualComponent can be driven generically rather than with per-element special-case code:
+
+  - idle, run, jump, fall — locomotion states, looped or single-shot as appropriate
+  - ability — plays while an element-specific ability is active (e.g., Wood's grow, Fire's ignite)
+  - transformIn — plays for the fixed 0.2–0.3s swap window when this element becomes active
+  - death — short, non-looping, triggers respawn on completion
+
+
+### 21.2 Animation Component Contract
+
+`PlayerVisualComponent` exposes a small state-driven API consumed by ElementStateMachine and PlayerPhysicsComponent: `setElement(ElementType)`, `playLocomotion(LocomotionState)`, `playAbility(AbilityId)`, `playTransformIn(from: ElementType, to: ElementType)`. It internally resolves these calls to the correct SpriteAnimation from the current element's pre-loaded animation set, so no other system needs to know asset file names.
+
+
+### 21.3 Performance Approach
+
+  - All four elements' spritesheets for the currently loaded level's required elements are pre-loaded at level-load time (Loading scene state) to guarantee the transformation animation never stalls on a texture load.
+  - Sprite atlases are used (not per-frame image files) to minimize draw calls and texture swaps, which matters most during rapid swap sequences.
+  - Particle-based FX (transformation burst, ability effects) are pooled objects, not instantiated/destroyed per use, to avoid GC pressure on mid-tier Android devices.
+
+
+## 22. Collision Handling
+
+
+### 22.1 Approach
+
+Element Shift uses Flame's built-in hitbox/collision detection system (`CollisionCallbacks`, `RectangleHitbox`/`PolygonHitbox`) rather than a full physics engine, since the game does not require rigid-body dynamics — only axis-aligned platforming collision, trigger volumes, and simple pushable-object movement. This keeps behavior predictable and easy to tune, which matters for puzzle fairness.
+
+
+### 22.2 Collision Categories
+
+| Category | Examples | Response |
+| --- | --- | --- |
+| Solid Terrain | Ground, walls, platforms | Standard block collision (stop movement, ground the player) |
+| One-Way Platform | Jump-through platforms | Collision only from above while falling |
+| Hazard (element-aware) | Fire pool, water hazard, electric zone | Trigger volume; queries player's current ElementType to determine harmless-pass-through vs. damage/respawn |
+| Interactable Trigger | Switches, seed anchors, crates | Trigger volume; dispatches an interaction event consumed by the relevant systems.dart handler |
+| Structure (runtime-spawned) | Wood bridge, Earth platform | Solid terrain once active; removed from collision world on decay/destruction |
+| Goal | Level exit | Trigger volume; fires LevelCompleted flow |
+
+
+### 22.3 Element-Aware Collision Resolution
+
+A single `HazardResponseResolver` centralizes the "which element survives which hazard" logic (mirroring the Element Comparison Matrix in §3.5 and the Combo table in §8.1), rather than scattering `if (element == fire)` checks across many hazard classes. This is the single place the design team (or an AI agent) edits to rebalance element interactions.
+
+```
+HazardResponseResolver.resolve(hazardType, currentElement) → HazardOutcome
+
+  {FireHazard,  Fire}   → Outcome.passThrough
+  {FireHazard,  Water}  → Outcome.extinguishesHazard   // water puts out fire
+  {FireHazard,  Earth}  → Outcome.respawn
+  {FireHazard,  Wood}   → Outcome.respawn               // wood burns
+  {WaterHazard, Water}  → Outcome.passThrough (swim)
+  {WaterHazard, Fire}   → Outcome.respawn (extinguished)
+  {WaterHazard, Earth}  → Outcome.sinks → Outcome.respawn
+  {WaterHazard, Wood}   → Outcome.floats / context-specific
+  {ElectricHazard, Water} → Outcome.respawn (only when hazard is 'live')
+  {CrumblingFloor, Earth} → Outcome.delayedCollapse(seconds: 1.5)
+```
+
+
+### 22.4 Collision Performance
+
+  - Broad-phase spatial partitioning (Flame's built-in QuadTree/Sweep support) is enabled once a level exceeds ~40 collidable entities, to keep collision checks sub-linear.
+  - Hazard/interactable trigger checks run at fixed update-step cadence (not per-render-frame) to decouple puzzle logic from variable frame rate.
+
+
+## 23. Level Loading Strategy
+
+
+### 23.1 Level Data Format
+
+Levels are authored in the Tiled map editor (.tmx) and exported to Tiled's JSON format, then validated against an internal schema before being committed to `assets/levels/`. This gives designers a visual authoring tool while keeping the runtime format simple, versioned, and diffable.
+
+```
+{
+  "levelId": "level_w1_07",
+  "world": 1,
+  "index": 7,
+  "gridSize": { "cols": 40, "rows": 12, "tileSize": 32 },
+  "requiredElements": ["fire", "water"],
+  "parTimeMs": 45000,
+  "minSwapTarget": 6,
+  "playerStart": { "x": 64, "y": 320 },
+  "checkpoints": [ { "x": 640, "y": 320 } ],
+  "goal": { "x": 1200, "y": 288 },
+  "terrain": [ /* tile layer references */ ],
+  "hazards": [ { "type": "fireHazard", "x": 384, "y": 320, "w": 96, "h": 32 } ],
+  "interactables": [ { "type": "seedAnchor", "id": "seed_1", "x": 512, "y": 288 } ],
+  "shards": [ { "x": 700, "y": 250 }, { "x": 900, "y": 200 } ]
+}
+```
+
+[Figure 23.1 — Simplified level JSON schema (illustrative subset).]
+
+
+### 23.2 Loading Sequence
+
+  1. Flutter's GameScreen receives a `levelId` (from LevelSelectScreen navigation).
+  2. A `LoadLevel(levelId)` command is sent across the event bus to the running ElementShiftGame.
+  3. SceneRouter transitions to the Loading state; the previous LevelWorld (if any) is disposed.
+  4. LevelLoader fetches the level's JSON from assets, validates it against the schema, and resolves `requiredElements` to determine which element spritesheets/animations to pre-load.
+  5. LevelLoader constructs a new LevelWorld component tree: terrain, hazards, interactables, checkpoints, goal, and the PlayerComponent at `playerStart`.
+  6. Once all required assets report loaded, SceneRouter transitions to Playing and input is enabled.
+
+
+### 23.3 Streaming & Memory Strategy
+
+  - Only the current level's required-element assets and the current world's tileset are kept resident; other worlds' assets are released on world transition (Flutter's asset cache eviction, or manual disposal for large atlases).
+  - World 1 assets ship in the base install; Worlds 2–4 (and any post-launch worlds) are delivered as on-demand asset packs via Play Asset Delivery on Android, with a graceful "downloading world" loading state.
+  - Level JSON files are tiny (a few KB each) and can all ship in the base install regardless of which world's art has been downloaded, so level-select screens can show full world structure even before art assets are fetched.
+
+
+### 23.4 Retry/Respawn Path (Fast Path)
+
+Respawning to the last checkpoint does not re-run the full Loading sequence — it is a lightweight in-place reset handled entirely within the already-loaded LevelWorld (reset player position/element to checkpoint state, reset any non-persistent hazard state, keep persistent-within-attempt changes like melted ice per §8.2). This keeps the ~10-second-to-retry promise from §6.4 realistic.
+
+
+
+==============================================================================
+PART III — UML & DIAGRAMS
+==============================================================================
+
+Diagrams are provided as ASCII art / structured text so they render identically in this document, in plain-text form, and inside an AI coding agent's context window without requiring an external renderer. Where useful, an equivalent Mermaid code block is also provided for teams using Mermaid-compatible tooling (e.g., in a linked online wiki).
+
+
+## 24. Class Diagram
+
+Core gameplay classes and their relationships (simplified; getters/setters and minor helper classes omitted for readability).
+
+```
+┌─────────────────────┐        ┌──────────────────────┐
+│   ElementShiftGame   │1      1│     SceneRouter        │
+│  (FlameGame)         │────────│                        │
+└──────────┬───────────┘        └──────────────────────┘
+           │ 1
+           │
+           │ 0..1
+┌──────────▼───────────┐        ┌──────────────────────┐
+│     LevelWorld        │1      *│   HazardComponent      │
+│  (Component)          │────────│  (abstract)            │
+└──────────┬───────────┘        └──────────┬───────────┘
+           │ 1                              │ extends
+           │                    ┌────────────┼────────────┐
+           │ 1              ┌───▼───┐    ┌───▼───┐    ┌───▼───┐
+┌──────────▼───────────┐   │FireHazard│  │WaterHazard│ │ElectricHazard│
+│   PlayerComponent      │   └─────────┘  └──────────┘ └──────────────┘
+│  (Component)           │
+└──────────┬─────────────┘
+           │ 1
+     ┌─────┼──────┬─────────────┬───────────────┐
+     │            │             │                │
+┌────▼────┐ ┌─────▼──────┐ ┌────▼──────┐  ┌──────▼───────┐
+│ PlayerInput│ │PlayerPhysics│ │PlayerVisual│  │ElementState   │
+│ Component   │ │Component    │ │Component   │  │Machine         │
+└────────────┘ └─────────────┘ └────────────┘  └──────┬─────────┘
+                                                        │ 1
+                                                        │
+                                                  ┌─────▼──────┐
+                                                  │ElementAbility│
+                                                  │  (abstract)  │
+                                                  └─────┬───────┘
+                                       ┌────────────────┼────────────────┐
+                                   ┌───▼───┐        ┌───▼───┐       ┌────▼────┐
+                                   │FireAbility│    │WaterAbility│  │EarthAbility│  (WoodAbility similar)
+                                   └──────────┘    └───────────┘  └────────────┘
+```
+
+[Figure 24.1 — Core class diagram (component composition + ability strategy hierarchy).]
+
+
+### 24.1 Key Class Contracts
+
+| Class | Key Members | Pattern |
+| --- | --- | --- |
+| ElementShiftGame | sceneRouter, audioManager, currentLevelWorld | Root FlameGame — composition root |
+| LevelWorld | entities[], objectiveSystem, checkpointSystem | Component — container for one level's live state |
+| PlayerComponent | inputComponent, physicsComponent, visualComponent, stateMachine | Component — composition of sub-behaviors |
+| ElementStateMachine | currentElement, requestSwap(ElementType), onTransformed callback | State machine |
+| ElementAbility (abstract) | onActivate(target), onElementBecomeActive(), onElementBecomeInactive() | Strategy pattern — one concrete class per element |
+| HazardComponent (abstract) | hazardType, onPlayerContact(ElementType) | Template method — concrete hazards implement contact response via HazardResponseResolver (§22.3) |
+| ObjectiveSystem | shardsCollected, elapsedMs, swapCount, computeStars() | Aggregator, read by LevelCompleteOverlay |
+| SaveService | recordLevelResult(...), getProgress(), getSettings() | Facade over local persistence (Hive/sqflite/shared_preferences) |
+
+
+## 25. State Diagram
+
+
+### 25.1 Full Element State Machine
+
+```
+                     ┌─────────────────────────────────────┐
+                     │                                       │
+        swap(Water)  │              swap(Earth)              │  swap(Wood)
+     ┌───────────────┼───────────────┐      ┌────────────────┼───────────┐
+     │               │               │      │                │           │
+┌────▼────┐   ┌──────▼──────┐  ┌─────▼────┐ │          ┌─────▼────┐      │
+│  Fire    │──▶│  Swapping    │─▶│  Water    │─┼─────────▶│  Earth    │──────┤
+│ (settled)│   │(0.2–0.3s,    │  │ (settled) │ │          │ (settled) │      │
+└────▲─────┘   │ params: from,│  └─────┬─────┘ │          └─────┬─────┘      │
+     │         │ to, inputs   │        │        │                │            │
+     │         │ buffered)    │        │        │                │            │
+     │         └──────┬───────┘        │        │                │            │
+     │                │                │        │                │            │
+     └────────────────┴────────────────┴────────┴────────────────┴────────────┘
+                              swap(Fire) from any settled state
+                                                                        ┌────────┐
+                                     swap(Wood) from any settled state ─▶│  Wood   │
+                                                                        │(settled)│
+                                                                        └────────┘
+```
+
+[Figure 25.1 — Every settled state (Fire/Water/Earth/Wood) transitions through a single shared 'Swapping' transient state to any other element; this is the implementation of the 0.2–0.3s transformation budget from §2.2.]
+
+
+### 25.2 Player Life-State Diagram
+
+```
+  ┌────────┐   hazard contact      ┌────────┐   death anim done   ┌───────────┐
+  │ Alive   │────(respawn outcome)─▶│ Dying   │────────────────────▶│ Respawning │
+  └───▲────┘                        └────────┘                     └─────┬─────┘
+      │                                                                   │ reset to checkpoint
+      └───────────────────────────────────────────────────────────────────┘
+
+  ┌────────┐   reach goal trigger   ┌────────────┐
+  │ Alive   │───────────────────────▶│ LevelComplete│  (terminal for this attempt)
+  └────────┘                        └────────────┘
+```
+
+[Figure 25.2 — Player life-state diagram, independent of the element state machine (a player can die/respawn in any element).]
+
+
+## 26. Game Flow Diagram
+
+```
+┌────────┐    ┌─────────┐    ┌──────────────┐    ┌───────────────┐    ┌──────────┐
+│ App     │───▶│ Home     │───▶│ World Select  │───▶│ Level Select   │───▶│  Game    │
+│ Launch  │    │ Screen   │    │ Screen        │    │ Screen          │    │ Screen   │
+└────────┘    └────┬────┘    └──────────────┘    └───────────────┘    └────┬─────┘
+                    │                                                        │
+         ┌──────────┼──────────┐                             ┌──────────────┼───────────────┐
+         ▼          ▼          ▼                             ▼                                ▼
+   ┌──────────┐┌─────────┐┌─────────┐               ┌─────────────────┐            ┌──────────────────┐
+   │ Settings  ││  Store   ││  Codex   │               │ LevelComplete     │            │  Respawn (loop)   │
+   │ Screen    ││  Screen  ││(stretch) │               │ Overlay            │            │  within attempt   │
+   └──────────┘└─────────┘└─────────┘               └────────┬────────┘            └──────────────────┘
+                                                              │
+                                              ┌───────────────┼───────────────┐
+                                              ▼               ▼               ▼
+                                        Retry Level     Next Level      Back to Level Select
+```
+
+[Figure 26.1 — Full game flow from app launch through a level attempt loop.]
+
+
+## 27. Asset Pipeline & Folder Structure (Reference)
+
+The asset pipeline diagram is presented in full in Figure 19.1; the Flutter and Flame folder structures are presented in full in Figures 14.1 and 15.1. This section cross-references them for readers assembling the UML section standalone.
+
+| Diagram | Location | Covers |
+| --- | --- | --- |
+| High-Level Architecture | Figure 13.1 (§13) | Flutter shell ↔ Flame engine boundary |
+| Flutter Project Structure | Figure 14.1 (§14) | lib/, assets/, test/ layout |
+| Flame Game Structure | Figure 15.1 (§15) | game/ module internals |
+| Scene Flow | Figure 16.1 (§16.3) | Loading → Playing → Paused → LevelComplete |
+| Class Diagram | Figure 24.1 (§24) | Core gameplay class composition |
+| Element State Diagram | Figure 25.1 (§25.1) | Transformation state machine |
+| Player Life-State Diagram | Figure 25.2 (§25.2) | Alive/Dying/Respawning/LevelComplete |
+| Game Flow Diagram | Figure 26.1 (§26) | Full screen-to-screen navigation |
+| Asset Pipeline | Figure 19.1 (§19.3) | Source art/levels/audio → runtime assets |
+
+
+
+==============================================================================
+PART IV — LEVEL DESIGN FRAMEWORK
+==============================================================================
+
+This part operationalizes the Level Design Philosophy (§6) and Puzzle Examples (§7) into a concrete, buildable framework: a world-by-world level list template, a per-level authoring checklist, and the difficulty/pacing rules restated as production targets.
+
+
+## 28. World-by-World Level Breakdown
+
+60 levels at launch across 4 worlds, 15 levels each. The table below gives the intended per-level focus for World 1 as a concrete template; Worlds 2–4 follow the same beat structure (Teach/Test/Twist/Combine per §6.1) scaled to their theme.
+
+
+### 28.1 World 1 — Foundations (Template for All Worlds)
+
+| Level | Beat | New Concept | Elements Required |
+| --- | --- | --- | --- |
+| 1-01 | Teach | Movement & jump only, no elements yet | None |
+| 1-02 | Teach | Fire introduced: burn a vine | Fire |
+| 1-03 | Test | Fire used twice in sequence (two vines) | Fire |
+| 1-04 | Teach | Water introduced: swim a flooded gap | Water |
+| 1-05 | Test | Water used with a simple obstacle | Water |
+| 1-06 | Twist | Choose Fire or Water depending on hazard read | Fire or Water |
+| 1-07 | Teach | Earth introduced: press a pressure switch | Earth |
+| 1-08 | Test | Earth used to push a crate onto a switch | Earth |
+| 1-09 | Teach | Wood introduced: grow a vine ladder | Wood |
+| 1-10 | Test | Wood used to bridge a gap | Wood |
+| 1-11 | Twist | Fire then Water in the same level (first dual-element preview) | Fire, Water |
+| 1-12 | Twist | Earth then Wood in the same level | Earth, Wood |
+| 1-13 | Twist | All four elements appear but each used independently | All 4 |
+| 1-14 | Combine | Light combination of two elements required to reach the goal | 2 of 4 |
+| 1-15 | Combine (capstone) | World 1 capstone: brief showcase using all four in independent mini-puzzles | All 4 |
+
+
+### 28.2 Worlds 2–4 Structural Summary
+
+| World | Levels 1–4 (Teach) | Levels 5–9 (Test) | Levels 10–13 (Twist) | Levels 14–15 (Combine) |
+| --- | --- | --- | --- | --- |
+| World 2 | Introduce sequencing pattern (A→B) with familiar elements | Sequencing under mild spatial complexity | Sequencing with a 'gotcha' (e.g., order matters) | Two full sequencing puzzles back-to-back |
+| World 3 | Introduce one new hazard/timing system per level | Timing systems combined with sequencing | Timing + sequencing under a shared clock | Capstone timing gauntlet |
+| World 4 | Introduce 3-step chains | 3-step chains with a twist element | 4-step chains, optional hard variants surfaced | Full-game capstone using every system taught |
+
+
+## 29. Per-Level Authoring Checklist
+
+Every level, whether built by a human designer or generated/assisted by an AI agent from this framework, must satisfy this checklist before being marked ready for playtesting:
+
+  1. Has exactly one required critical-path solution (verified by a solver pass or manual walkthrough).
+  2. Requires no more than one new concept beyond what prior levels in the world have taught (see §6.1 Teach/Test/Twist/Combine).
+  3. Completable within the target length for its world (see §6.3 table).
+  4. Defines exactly three golden Star Collectibles for the 0–3 star rating; parTimeMs or minSwapTarget may be configured separately as an optional challenge objective.
+  5. Places 0–3 Element Shards, each behind a path slightly harder than the critical path (never on the critical path itself).
+  6. Every hazard and interactable uses only the approved visual/audio language from §3 and §11.3 — no bespoke unexplained mechanics.
+  7. Checkpoint(s) placed so no failure requires more than ~10 seconds of backtracking (§6.4).
+  8. Validated against the Element Comparison Matrix (§3.5) and Combo table (§8.1) — no interaction contradicts established rules.
+  9. Tagged with `requiredElements` in its level JSON (§23.1) so LevelLoader pre-loads only what's needed.
+
+
+### 29.1 Level JSON Authoring Reference
+
+See §23.1, Figure 23.1 for the canonical level schema. Designers and AI agents should author new levels against that schema directly, or via the Tiled editor export pipeline (§19.3), rather than hand-writing JSON for complex levels.
+
+
+## 30. Difficulty & Pacing — Production Targets
+
+Restating §6.3 as concrete production targets for QA sign-off:
+
+| Metric | World 1 | World 2 | World 3 | World 4 |
+| --- | --- | --- | --- | --- |
+| Target external-tester fail rate | < 10% | 10–20% | 20–30% | 25–35% |
+| Avg. elements required per puzzle | 1 | 2 | 2–3 | 3–4 |
+| Avg. level completion time (first attempt) | 45–75s | 60–100s | 75–120s | 90–150s |
+| Max acceptable session-ending frustration events (per playtest) | 0 | ≤ 1 | ≤ 2 | ≤ 2 |
+
+"Frustration events" are defined during playtesting as any moment a tester expresses that a failure felt unfair (as opposed to a fair puzzle-logic mistake) — these are tracked qualitatively during moderated playtests in the Alpha/Beta milestones (Part V).
+
+
+
+==============================================================================
+PART V — DEVELOPMENT ROADMAP
+==============================================================================
+
+Milestones are scoped to be achievable by a small team (1–3 developers) using AI-assisted development. Each milestone lists concrete deliverables and an explicit exit criterion so the team knows when to move to the next phase.
+
+
+## 31. Milestones
+
+
+### 31.1 Milestone 0 — Prototype (Est. 2–3 weeks)
+
+| Deliverable | Detail |
+| --- | --- |
+| Core loop playable | One character, Fire and Water only, 3–5 grey-box levels |
+| Transformation feel validated | Swap timing, input buffering, and feedback tuned to the 0.2–0.3s target (§2.2) |
+| Basic collision system | Solid terrain + one hazard type per element working end-to-end |
+| Placeholder art/audio | Programmer art acceptable; only the swap stinger needs real audio for feel-testing |
+
+Exit criterion: internal playtesters agree the transformation mechanic is fun in isolation, with no input lag complaints, across at least 10 informal test sessions.
+
+
+### 31.2 Milestone 1 — Vertical Slice (Est. 4–6 weeks)
+
+| Deliverable | Detail |
+| --- | --- |
+| World 1 complete | All 15 levels per §28.1, final art pass for Fire/Water/Earth/Wood and World 1 tileset |
+| Full HUD & controls | Quick-swap buttons + Element Wheel toggle, both control schemes per §5 |
+| Save system v1 | Level results, star ratings, settings persistence (§18) |
+| Audio pass v1 | All four transformation stingers, World 1 ambient/music, core puzzle feedback sounds |
+| Core menu flow | Home → World Select → Level Select → Game → Level Complete |
+
+Exit criterion: external playtesters complete World 1 end-to-end with an average completion rate above 80% without hints (Executive Summary §0.6).
+
+
+### 31.3 Milestone 2 — Alpha (Est. 6–8 weeks)
+
+| Deliverable | Detail |
+| --- | --- |
+| All 4 worlds content-complete | All 60 levels built and passing the Authoring Checklist (§29) |
+| Combo/interaction system finalized | Full Element Comparison Matrix (§3.5) and Combo table (§8.1) implemented and balanced |
+| Progression system complete | Star system, world unlock gating, Element Shard economy (§9) |
+| Ads/IAP integration (test mode) | Rewarded/interstitial placements wired per §10, using test ad units |
+| Accessibility pass v1 | Colorblind iconography, HUD scale, haptics toggle (§5.4) |
+
+Exit criterion: full game is completable start to finish by an internal team member with no blocking bugs; performance holds 55+ FPS on the reference mid-tier device across all worlds (Executive Summary §0.6).
+
+
+### 31.4 Milestone 3 — Beta (Est. 4–6 weeks)
+
+| Deliverable | Detail |
+| --- | --- |
+| Full art/audio polish | Final passes on all sprite animations, particles, and music per §12/§11 |
+| Live ad/IAP integration | Production ad units, store IAP products configured and tested on both platforms |
+| Closed beta test | External cohort (50–200 testers) via Play Console closed testing track |
+| Analytics integration | Funnel, retention, and monetization event tracking wired (Future Expansion §16 dependency) |
+| Store listing assets | Screenshots, promo video, description, ratings questionnaire completed |
+
+Exit criterion: Day-1/Day-7 retention and crash-free session rate meet the team's pre-defined launch bar (benchmarked against genre comparables, Executive Summary §0.6); no critical or high-severity bugs open.
+
+
+### 31.5 Milestone 4 — Release (Est. 1–2 weeks)
+
+| Deliverable | Detail |
+| --- | --- |
+| Store submission | Google Play production release; App Store submission prepared in parallel if iOS is in scope for launch |
+| Launch monitoring plan | Crash reporting, ad fill-rate, and retention dashboards live from day one |
+| Post-launch hotfix readiness | CI/CD pipeline validated for a same-day hotfix release if needed |
+
+
+### 31.6 Milestone Timeline Summary
+
+| Milestone | Duration (est.) | Cumulative |
+| --- | --- | --- |
+| Prototype | 2–3 weeks | Week 3 |
+| Vertical Slice | 4–6 weeks | Week 9 |
+| Alpha | 6–8 weeks | Week 17 |
+| Beta | 4–6 weeks | Week 23 |
+| Release | 1–2 weeks | Week 25 |
+
+[Table 31.6 — Indicative timeline for a small team; AI-assisted development (Part VI) is expected to compress Alpha content-production time specifically, since level/asset scaffolding is the most parallelizable work.]
+
+
+
+==============================================================================
+PART VI — AI DEVELOPMENT SPECIFICATIONS
+==============================================================================
+
+This part exists to let an AI coding agent (Cursor, GitHub Copilot, Claude Code, etc.) implement Element Shift incrementally without losing architectural consistency. Tasks are scoped to be independently completable, ordered by dependency, and each carries explicit acceptance criteria an agent (or a human reviewer) can check mechanically.
+
+
+### 32.0 How to Use This Section
+
+  - Work top-to-bottom within a sprint; sprints are ordered by dependency, not by priority alone.
+  - Each task references the GDD/SDD section that is its source of truth — when in doubt, that section wins over assumptions.
+  - No task should require inventing new architecture not described in Part II; if a task seems to need that, it should be flagged for a design/architecture review rather than improvised.
+  - Acceptance criteria are written to be verifiable by a human playtester or a scripted test, not just "code compiles."
+
+
+## 32. Modular Implementation Order
+
+High-level dependency chain — later sprints assume earlier sprints' deliverables exist and are stable:
+
+```
+Sprint 0: Project Scaffolding
+     │
+Sprint 1: Player Core (movement, one element, physics)
+     │
+Sprint 2: Element State Machine (all 4 elements, swap system)
+     │
+Sprint 3: Collision & Hazard System (§22)
+     │
+Sprint 4: Level Loader & Data-Driven Levels (§23)
+     │
+Sprint 5: Interactables & Structures (switches, crates, Wood/Earth structures)
+     │
+Sprint 6: Objective/Progression System (stars, shards, save system §17–18)
+     │
+Sprint 7: Audio & Animation Polish (§20–21)
+     │
+Sprint 8: Flutter Shell (menus, settings, level select)
+     │
+Sprint 9: Monetization Integration (ads, IAP, §10)
+     │
+Sprint 10: Content Production (remaining 45 levels using Sprint 4's tools)
+     │
+Sprint 11: Polish, Accessibility, Performance Pass
+```
+
+
+## 33. Sprint-Sized Tasks & Acceptance Criteria
+
+
+### Sprint 0 — Project Scaffolding
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Create Flutter project with folder structure | §14 | Repo matches Figure 14.1 structure; `flutter run` launches an empty GameWidget with no errors |
+| Add Flame, Riverpod, go_router dependencies | §14.1 | pubspec.yaml includes all packages in the Key Packages table; app builds on Android debug |
+| Set up test/ scaffolding | §14 | At least one passing unit test and one passing widget test exist as templates |
+
+
+### Sprint 1 — Player Core
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement PlayerComponent with input/physics/visual sub-components | §15.1 | Character can move left/right and jump on a flat grey-box test level; no other systems required |
+| Implement basic ground/wall collision | §22.1 | Player cannot pass through solid terrain; standard platformer jump arc feels correct (playtest by feel, no numeric target yet) |
+| Implement mobile input (movement + jump only) | §5.1 | Touch controls work on a physical or emulated Android device at 60fps input responsiveness |
+
+
+### Sprint 2 — Element State Machine
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement ElementStateMachine with all 4 states + shared Swapping transient state | §17.1, §25.1 | Swapping from any element to any other completes in 0.20–0.30s measured in a debug overlay; inputs during swap are buffered, not dropped |
+| Implement 4 quick-swap HUD buttons | §5.1 | Tapping a button swaps to that element even if another element is already active; buttons are color+icon coded per §5.4 |
+| Implement transformation visual + audio feedback | §2.2, §11.1, §21.2 | Each swap plays a distinct < 300ms particle burst and stinger matching the element's color language (§12.1) |
+| Implement per-element locomotion stat deltas (speed, jump weight) | §3.1–3.4 | Fire is measurably faster, Earth measurably slower than baseline in a debug speed readout |
+
+
+### Sprint 3 — Collision & Hazard System
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement HazardResponseResolver | §22.3 | Given (hazardType, currentElement), returns the exact outcome specified in the resolution table; covered by unit tests for every pairing listed |
+| Implement FireHazard, WaterHazard, ElectricHazard components | §22.2 | Each hazard triggers the correct HazardResponseResolver outcome in a grey-box test level containing all three |
+| Implement respawn-to-checkpoint flow | §25.2, §23.4 | Death → respawn completes in-place without a full level reload; player returns to last checkpoint within ~1s |
+
+
+### Sprint 4 — Level Loader & Data-Driven Levels
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Define and validate level JSON schema | §23.1 | Schema validator rejects malformed level files with a clear error; accepts the example in Figure 23.1 |
+| Implement LevelLoader | §23.2 | Loading a levelId constructs a full LevelWorld (terrain, hazards, player start, goal) purely from JSON, no per-level code |
+| Implement Loading → Playing scene transition | §16.2, §16.3 | Loading overlay shows until all required-element assets report loaded; no visible pop-in of the player sprite |
+| Build/validate Tiled → JSON export pipeline | §19.3, §23.1 | A level authored in Tiled exports and loads correctly end-to-end |
+
+
+### Sprint 5 — Interactables & Structures
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement switches (fire/water/earth/universal) | §3, §22.2 | Each switch type only activates under the correct element condition (e.g., pressure switch requires Earth's weight class) |
+| Implement pushable crates | §3.3 | Earth can push a crate onto a pressure switch; switch stays active while crate remains on it, independent of current element (§8.2) |
+| Implement Wood bridge/vine/platform structures with decay timers | §3.4, §8.2 | Structures render a decay-warning shimmer ≥ 2s before disappearing; Fire destroys any active structure on contact (§8.1) |
+| Implement Earth stone platform spawn-at-anchor | §3.3 | Platform appears at the correct anchor point only while Earth is active and within spec range |
+
+
+### Sprint 6 — Objective/Progression System
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement ObjectiveSystem (shards, timer, swap count) | §15.1, §9.2 | Level completion reports accurate shard count, elapsed time, and swap count matching manual verification |
+| Implement star collection rating | §9.2 | Completion awards exactly the number of golden Star Collectibles collected (0–3); Element Shards and challenge targets do not change this count |
+| Implement SaveService + local DB integration | §18 | Level results persist across app restart; results only ever improve (merge-max), never regress |
+| Implement world unlock gating | §9.1 | World N+1 unlocks exactly at the specified star threshold, verified by a scripted test that awards stars incrementally |
+
+
+### Sprint 7 — Audio & Animation Polish
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement AudioManager with 3 channels + SFX pooling | §20 | Volume sliders independently affect Music/SFX/UI; rapid element swapping does not cause audio cutoff or crackling |
+| Implement event-driven audio mapping | §20.2 | Sound design can be remapped by editing a data table, with no gameplay code changes required, verified by swapping one SFX asset |
+| Finalize per-element animation sets (idle/run/jump/fall/ability/transformIn/death) | §21.1 | All 4 elements have complete animation sets with no missing-frame fallback visible in normal play |
+
+
+### Sprint 8 — Flutter Shell
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Implement Home, World Select, Level Select screens | §16.1 | Full navigation flow matches Figure 26.1 with no dead-end screens |
+| Implement Settings screen (controls, accessibility, audio) | §5.4, §17 | All settings listed in §18.1 are editable and persist; HUD scale and colorblind icon mode visibly change in-game |
+| Implement Element Wheel alternate control scheme | §5.2 | Toggling the setting switches HUD input mode without restarting the level |
+
+
+### Sprint 9 — Monetization Integration
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Integrate rewarded ad placements | §10.1 | Hint and Double-Shards placements trigger only on explicit opt-in tap, never automatically; daily cap enforced |
+| Integrate interstitial ads with frequency cap | §10.2 | Interstitial never shows on a first attempt or immediately after a fail; frequency cap is remotely configurable |
+| Integrate Remove Ads / bundle IAP | §10.3 | Purchasing Remove Ads immediately and permanently suppresses interstitials across app restarts |
+
+
+### Sprint 10 — Content Production
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Author remaining World 1 levels (1-02 through 1-15) | §28.1 | Each level passes the full Authoring Checklist (§29) before being marked complete |
+| Author Worlds 2–4 (45 levels) | §28.2 | Each world hits its target fail-rate/elements-per-puzzle bands (§30) during internal playtesting before being locked |
+
+
+### Sprint 11 — Polish, Accessibility, Performance
+
+| Task | Source | Acceptance Criteria |
+| --- | --- | --- |
+| Performance pass on mid-tier reference device | Executive Summary §0.6 | Sustained 55+ FPS across all 4 worlds' most demanding levels |
+| Full accessibility audit | §5.4 | All accessibility items in §5.4 verified present and functional by a checklist pass |
+| Final QA pass against Level Authoring Checklist for all 60 levels | §29 | 100% of shipped levels pass every checklist item |
+
+
+## 34. Guardrails for AI Coding Agents
+
+These constraints exist to prevent an AI agent from quietly drifting away from the architecture defined in Part II while iterating quickly.
+
+  - Never hard-code level content in Dart classes — all level content flows through the LevelLoader/JSON pipeline (§23).
+  - Never add direct storage/IO calls inside Flame-layer classes — persistence always flows through SaveService via the event bus (§17.2, §18.2).
+  - Never special-case an element inside a hazard or interactable class — element-vs-hazard outcomes belong in HazardResponseResolver (§22.3) so the rules stay centralized and auditable.
+  - Never introduce a new cross-boundary Flutter/Flame call without adding it to the Event Bus table (§17.2) first — undocumented coupling is the fastest way to lose consistency across AI-assisted sessions.
+  - When a task is ambiguous, prefer the simplest implementation consistent with the referenced GDD/SDD section over inventing new systems; flag genuine gaps for a design-doc update rather than silently improvising a new mechanic.
+  - Keep puzzle/interaction logic (what happens) decoupled from rendering/animation code (how it looks) per §13.1, so logic remains unit-testable without booting Flame.
+
+
+
+==============================================================================
+PART VII — FUTURE EXPANSION IDEAS
+==============================================================================
+
+Ideas intentionally out of scope for the initial 60-level, 4-world launch, listed here so they are captured without inflating launch scope.
+
+
+## 35. Content Expansions
+
+  - World 5+: a fifth element (e.g., Air/Wind or Ice as a distinct form rather than an environmental state) introduced via a content update.
+  - Daily rotating Challenge Levels reusing existing tilesets with new hazard/switch layouts (§9.4) — low art cost, high replay value.
+  - Seasonal/limited-time cosmetic skins tied to real-world events, sold only for Element Shards (never real money) to preserve fairness.
+  - A level editor / community levels mode, gated behind a moderation or curation system if enabled.
+
+
+## 36. Systems Expansions
+
+  - Cloud save via Play Games Services / Game Center (§18.4).
+  - Leaderboards and friend challenges for par-time and minimum-swap records (§9.4).
+  - Expanded Codex/lore system with unlockable world-building content (teased as a stretch goal in §7.3/§9.3).
+  - Additional accessibility options: full button remapping presets, colorblind palette variants beyond the shape-coding already in scope.
+  - Analytics-driven dynamic difficulty suggestions (e.g., surfacing the hint ad slightly earlier for players who fail a level many times), always opt-in.
+
+
+## 37. Platform Expansions
+
+  - iOS release following Android launch, reusing the same Flutter/Flame codebase with platform-specific IAP/ad SDK wiring.
+  - Web build (Flutter Web) as a promotional/demo version, likely capped to World 1 content for a fast-loading marketing experience.
+  - Controller support for potential future desktop/console exploration, made easier by the existing input-abstraction layer (§15.1 PlayerInputComponent).
